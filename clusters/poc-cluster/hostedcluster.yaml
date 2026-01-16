@@ -9,6 +9,13 @@ spec:
     image: quay.io/openshift-release-dev/ocp-release:4.18.30-multi
   pullSecret:
     name: pull-secret
+  etcd:
+    managed:
+      storage:
+        persistentVolume:
+          size: 8Gi
+        type: PersistentVolume
+    managementType: Managed
   platform:
     type: KubeVirt
     kubevirt:
@@ -16,12 +23,22 @@ spec:
   networking:
     clusterNetwork:
       - cidr: 10.132.0.0/14
+    networkType: OVNKubernetes
     serviceNetwork:
       - cidr: 172.31.0.0/16
   services:
     - service: APIServer
       servicePublishingStrategy:
         type: LoadBalancer
+    - service: OAuthServer
+      servicePublishingStrategy:
+        type: Route
+    - service: Konnectivity
+      servicePublishingStrategy:
+        type: Route
     - service: Ignition
+      servicePublishingStrategy:
+        type: Route
+    - service: OVNSbDb
       servicePublishingStrategy:
         type: Route
