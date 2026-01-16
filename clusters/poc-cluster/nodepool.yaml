@@ -6,6 +6,14 @@ metadata:
 spec:
   clusterName: poc-cluster
   replicas: 2
+  management:
+    autoRepair: true
+    replace:
+      strategy: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+        maxSurge: 1
+    upgradeType: Replace
   release:
     image: quay.io/openshift-release-dev/ocp-release:4.18.30-multi
   platform:
