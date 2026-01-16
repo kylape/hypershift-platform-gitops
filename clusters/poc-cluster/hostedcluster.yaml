@@ -1,0 +1,26 @@
+apiVersion: hypershift.openshift.io/v1beta1
+kind: HostedCluster
+metadata:
+  name: poc-cluster
+  namespace: clusters
+spec:
+  release:
+    image: quay.io/openshift-release-dev/ocp-release:4.18.30-multi
+  pullSecret:
+    name: pull-secret
+  platform:
+    type: KubeVirt
+    kubevirt:
+      baseDomainPassthrough: true
+  networking:
+    clusterNetwork:
+      - cidr: 10.132.0.0/14
+    serviceNetwork:
+      - cidr: 172.31.0.0/16
+  services:
+    - service: APIServer
+      servicePublishingStrategy:
+        type: LoadBalancer
+    - service: Ignition
+      servicePublishingStrategy:
+        type: Route

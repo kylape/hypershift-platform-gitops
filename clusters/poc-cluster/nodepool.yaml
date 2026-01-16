@@ -1,0 +1,20 @@
+apiVersion: hypershift.openshift.io/v1beta1
+kind: NodePool
+metadata:
+  name: poc-cluster-workers
+  namespace: clusters
+spec:
+  clusterName: poc-cluster
+  replicas: 2
+  release:
+    image: quay.io/openshift-release-dev/ocp-release:4.18.30-multi
+  platform:
+    type: KubeVirt
+    kubevirt:
+      compute:
+        cores: 8
+        memory: 32Gi
+      rootVolume:
+        persistent:
+          size: 100Gi
+        type: Persistent
