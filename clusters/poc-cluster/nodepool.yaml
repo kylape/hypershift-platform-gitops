@@ -3,10 +3,6 @@ kind: NodePool
 metadata:
   name: poc-cluster-workers
   namespace: clusters
-  annotations:
-    # Use masquerade instead of bridge for pod network - provides NAT and built-in DHCP
-    hypershift.openshift.io/kubevirt-vm-jsonpatch: |
-      [{"op": "replace", "path": "/spec/template/spec/domain/devices/interfaces/0", "value": {"name": "default", "masquerade": {}}}]
 spec:
   clusterName: poc-cluster
   replicas: 2
