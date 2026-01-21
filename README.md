@@ -1,6 +1,6 @@
 # HyperShift Platform GitOps
 
-This repository contains GitOps manifests for managing a HyperShift-enabled OpenShift platform.
+This repository contains GitOps manifests for managing a standalone HyperShift deployment on OpenShift.
 
 ## Structure
 
@@ -9,11 +9,9 @@ hypershift-platform-gitops/
 ├── bootstrap/
 │   └── argocd-apps.yaml          # App-of-apps for Argo CD
 ├── platform/
-│   ├── mce/
-│   │   ├── namespace.yaml
-│   │   ├── operatorgroup.yaml
-│   │   ├── subscription.yaml
-│   │   └── multiclusterengine.yaml
+│   ├── hypershift/
+│   │   ├── crds.yaml             # HyperShift CRDs
+│   │   └── operator.yaml         # HyperShift operator deployment
 │   └── clusters-namespace.yaml
 └── clusters/
     └── poc-cluster/
@@ -25,7 +23,7 @@ hypershift-platform-gitops/
 
 ### Platform
 
-* **MCE (Multicluster Engine)**: Provides HyperShift capability for hosted clusters
+* **HyperShift Operator**: Standalone HyperShift deployment using custom image `quay.io/klape/hypershift:arm64-kubevirt`
 * **Clusters Namespace**: Namespace where hosted clusters are created
 
 ### Clusters
@@ -38,24 +36,46 @@ hypershift-platform-gitops/
 * OpenShift Virtualization operator installed
 * OpenShift GitOps (Argo CD) installed
 
+## GitOps Deployment
+
+```bash
+# 1. Install OpenShift GitOps operator
+oc apply -f - <<EOF
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: openshift-gitops-operator
+  namespace: openshift-operators
+spec:
+  channel: latest
+  name: openshift-gitops-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+EOF
+
+# 2. Wait for GitOps operator
+oc wait --for=condition=Available deployment/openshift-gitops-server -n openshift-gitops --timeout=300s
+
+# 3. Apply the bootstrap
+oc apply -f https://raw.githubusercontent.com/kylape/hypershift-platform-gitops/main/bootstrap/argocd-apps.yaml
+```
+
 ## Manual Deployment
 
 If not using GitOps, apply manifests in order:
 
 ```bash
-# 1. Install MCE operator
-kubectl apply -f platform/mce/namespace.yaml
-kubectl apply -f platform/mce/operatorgroup.yaml
-kubectl apply -f platform/mce/subscription.yaml
+# 1. Install HyperShift CRDs
+kubectl apply -f platform/hypershift/crds.yaml
 
-# 2. Wait for operator to install
-kubectl wait --for=condition=CatalogSourcesUnhealthy=False csv -n multicluster-engine --all --timeout=300s
+# 2. Wait for CRDs to be established
+kubectl wait --for=condition=Established crd/hostedclusters.hypershift.openshift.io --timeout=60s
 
-# 3. Create MultiClusterEngine
-kubectl apply -f platform/mce/multiclusterengine.yaml
+# 3. Install HyperShift operator
+kubectl apply -f platform/hypershift/operator.yaml
 
-# 4. Wait for HyperShift
-kubectl wait --for=condition=Available mce/multiclusterengine --timeout=600s
+# 4. Wait for operator
+kubectl wait --for=condition=Available deployment/operator -n hypershift --timeout=300s
 
 # 5. Create clusters namespace
 kubectl apply -f platform/clusters-namespace.yaml
@@ -81,3 +101,19 @@ kubectl get secret -n clusters poc-cluster-admin-kubeconfig \
 export KUBECONFIG=/tmp/poc-cluster-kubeconfig
 kubectl get nodes
 ```
+
+## Updating the HyperShift Image
+
+To update the HyperShift operator image:
+
+1. Build and push your new image to `quay.io/klape/hypershift:<tag>`
+2. Regenerate the operator manifest:
+   ```bash
+   cd ~/workspace/src/hypershift
+   ./bin/hypershift install render \
+     --hypershift-image="quay.io/klape/hypershift:<new-tag>" \
+     --limit-crd-install=KubeVirt \
+     --outputs=resources \
+     --output-file=~/workspace/src/hypershift-platform-gitops/platform/hypershift/operator.yaml
+   ```
+3. Commit and push to trigger ArgoCD sync

@@ -18,14 +18,41 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: mce-operator
+  name: hypershift-crds
   namespace: openshift-gitops
 spec:
   project: hypershift-platform
   source:
     repoURL: https://github.com/kylape/hypershift-platform-gitops.git
     targetRevision: main
-    path: platform/mce
+    path: platform/hypershift
+    directory:
+      include: crds.yaml
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - Replace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hypershift-operator
+  namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: hypershift-platform
+  source:
+    repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+    targetRevision: main
+    path: platform/hypershift
+    directory:
+      include: operator.yaml
   destination:
     server: https://kubernetes.default.svc
   syncPolicy:
@@ -40,6 +67,8 @@ kind: Application
 metadata:
   name: clusters-namespace
   namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   project: hypershift-platform
   source:
@@ -62,6 +91,8 @@ kind: Application
 metadata:
   name: poc-cluster
   namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   project: hypershift-platform
   source:
