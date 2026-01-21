@@ -11,6 +11,8 @@ spec:
     persistence:
       persistentVolumeClaim:
         claimName: central-db
+  scanner:
+    scannerComponent: Disabled
   scannerV4:
     indexer:
       scaling:
