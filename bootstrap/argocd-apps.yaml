@@ -23,7 +23,7 @@ metadata:
 spec:
   project: hypershift-platform
   source:
-    repoURL: https://github.com/YOUR_ORG/hypershift-platform-gitops.git
+    repoURL: https://github.com/kylape/hypershift-platform-gitops.git
     targetRevision: main
     path: platform/mce
   destination:
@@ -43,7 +43,7 @@ metadata:
 spec:
   project: hypershift-platform
   source:
-    repoURL: https://github.com/YOUR_ORG/hypershift-platform-gitops.git
+    repoURL: https://github.com/kylape/hypershift-platform-gitops.git
     targetRevision: main
     path: platform
     directory:
@@ -65,7 +65,7 @@ metadata:
 spec:
   project: hypershift-platform
   source:
-    repoURL: https://github.com/YOUR_ORG/hypershift-platform-gitops.git
+    repoURL: https://github.com/kylape/hypershift-platform-gitops.git
     targetRevision: main
     path: clusters/poc-cluster
   destination:
