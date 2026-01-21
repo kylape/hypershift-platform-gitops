@@ -2,6 +2,8 @@ apiVersion: hco.kubevirt.io/v1beta1
 kind: HyperConverged
 metadata:
   annotations:
+    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
     deployOVS: "false"
     kubevirt.kubevirt.io/jsonpatch: '[{"op": "add", "path": "/spec/configuration/developerConfiguration/featureGates/-",
       "value": "VSOCK"}]'
