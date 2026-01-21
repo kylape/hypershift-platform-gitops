@@ -12,6 +12,31 @@ hypershift-platform-gitops/
 │   ├── hypershift/
 │   │   ├── crds.yaml             # HyperShift CRDs
 │   │   └── operator.yaml         # HyperShift operator deployment
+│   ├── mce/
+│   │   ├── namespace.yaml
+│   │   ├── operatorgroup.yaml
+│   │   ├── subscription.yaml
+│   │   └── multiclusterengine.yaml
+│   ├── openshift-virtualization/
+│   │   ├── namespace.yaml        # openshift-cnv namespace
+│   │   ├── operatorgroup.yaml
+│   │   ├── subscription.yaml     # CNV operator subscription
+│   │   └── hyperconverged.yaml   # HyperConverged CR with VSOCK enabled
+│   ├── stackrox/
+│   │   ├── 00-namespace.yaml
+│   │   ├── 01-secrets.yaml       # TLS certs, passwords, init bundles
+│   │   ├── 02-configmaps.yaml
+│   │   ├── 03-serviceaccounts.yaml
+│   │   ├── 04-services.yaml
+│   │   ├── 05-deployments.yaml   # Central, Scanner V4, Sensor, etc.
+│   │   ├── 06-daemonsets.yaml    # Collector
+│   │   ├── 07-roles.yaml
+│   │   ├── 08-rolebindings.yaml
+│   │   ├── 09-clusterroles.yaml
+│   │   ├── 10-clusterrolebindings.yaml
+│   │   ├── 11-pvcs.yaml
+│   │   ├── 12-routes.yaml
+│   │   └── 13-crds.yaml          # SecurityPolicy CRD
 │   └── clusters-namespace.yaml
 └── clusters/
     └── poc-cluster/
@@ -24,6 +49,12 @@ hypershift-platform-gitops/
 ### Platform
 
 * **HyperShift Operator**: Standalone HyperShift deployment using custom image `quay.io/klape/hypershift:arm64-kubevirt`
+* **Multicluster Engine (MCE)**: MCE operator for cluster management
+* **OpenShift Virtualization**: KubeVirt-based virtualization platform
+  * Includes HyperConverged CR with VSOCK feature gate enabled for VM scanning
+* **StackRox (ACS)**: Advanced Cluster Security deployment
+  * Central, Scanner V4, Sensor, Admission Control, Collector
+  * VM scanning support enabled via `ROX_VIRTUAL_MACHINES=true`
 * **Clusters Namespace**: Namespace where hosted clusters are created
 
 ### Clusters
@@ -32,8 +63,7 @@ hypershift-platform-gitops/
 
 ## Prerequisites
 
-* OpenShift 4.18+ with bare metal workers (for KubeVirt)
-* OpenShift Virtualization operator installed
+* OpenShift 4.18+ with bare metal or virtualization-capable workers
 * OpenShift GitOps (Argo CD) installed
 
 ## GitOps Deployment
