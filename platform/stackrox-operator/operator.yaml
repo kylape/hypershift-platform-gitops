@@ -4304,7 +4304,7 @@ spec:
             resourceFieldRef:
               containerName: manager
               resource: limits.memory
-        image: quay.io/rhacs-eng/stackrox-operator:4.10.x-851-ge00b4bc697
+        image: quay.io/stackrox-io/stackrox-operator:4.10.0-854-g7c1fb51a41
         livenessProbe:
           httpGet:
             path: /healthz
