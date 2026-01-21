@@ -1,0 +1,154 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    annotations:
+      email: support@stackrox.com
+      helm.sh/hook: pre-install,pre-upgrade
+      helm.sh/hook-delete-policy: never
+      helm.sh/resource-policy: keep
+      meta.helm.sh/release-name: stackrox-central-services
+      meta.helm.sh/release-namespace: stackrox
+      owner: stackrox
+      pv.kubernetes.io/bind-completed: "yes"
+      pv.kubernetes.io/bound-by-controller: "yes"
+      volume.beta.kubernetes.io/storage-provisioner: ebs.csi.aws.com
+      volume.kubernetes.io/selected-node: ip-10-0-0-201.ec2.internal
+      volume.kubernetes.io/storage-provisioner: ebs.csi.aws.com
+    finalizers:
+    - kubernetes.io/pvc-protection
+    labels:
+      app.kubernetes.io/component: central
+      app.kubernetes.io/instance: stackrox-central-services
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: stackrox
+      app.kubernetes.io/part-of: stackrox-central-services
+      app.kubernetes.io/version: 4.9.2
+      helm.sh/chart: stackrox-central-services-400.9.2
+    name: central-db
+    namespace: stackrox
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 100Gi
+    storageClassName: gp3-csi
+    volumeMode: Filesystem
+    volumeName: pvc-5c58a4ad-28cb-4317-9f48-690324f16a70
+  status:
+    accessModes:
+    - ReadWriteOnce
+    capacity:
+      storage: 100Gi
+    phase: Bound
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    annotations:
+      cdi.kubevirt.io/allowClaimAdoption: "true"
+      cdi.kubevirt.io/clonePhase: Succeeded
+      cdi.kubevirt.io/cloneType: snapshot
+      cdi.kubevirt.io/createdForDataVolume: fbbf81a8-fe97-4aaf-a59c-f817a7c61e14
+      cdi.kubevirt.io/dataSourceNamespace: openshift-virtualization-os-images
+      cdi.kubevirt.io/storage.clone.token: eyJhbGciOiJQUzI1NiJ9.eyJleHAiOjE3NjkwMjM4MzksImlhdCI6MTc2OTAyMzUzOSwiaXNzIjoiY2RpLWFwaXNlcnZlciIsIm5hbWUiOiJyaGVsOS1hYjRlYzE2MDc3ZmUiLCJuYW1lc3BhY2UiOiJvcGVuc2hpZnQtdmlydHVhbGl6YXRpb24tb3MtaW1hZ2VzIiwibmJmIjoxNzY5MDIzNTM5LCJvcGVyYXRpb24iOiJDbG9uZSIsInBhcmFtcyI6eyJ0YXJnZXROYW1lIjoicmhlbC05LWFybTY0LWhhcmxlcXVpbi1zYWlsZmlzaC0yMy12b2x1bWUiLCJ0YXJnZXROYW1lc3BhY2UiOiJzdGFja3JveCJ9LCJyZXNvdXJjZSI6eyJncm91cCI6IiIsInJlc291cmNlIjoicGVyc2lzdGVudHZvbHVtZWNsYWltcyIsInZlcnNpb24iOiJ2MSJ9fQ.xRuzt_UkJiQwhyRjSn7Uh-SDH2FzEjUTFoaTf9zW6Drq1-oESJYrCJ7va1qmz0FQNXX1WQpptj0S4zlG2ULkifNFbUot1B6TtE2d_hSmSc5jKmk6H2PD0FksoYireXeOskGlRK0G7lP7iY3qT1jDebUfqBgVYd5tXRyoGCrQSA9VBh9Eq8nkdcFRu_t3C1hq7xOUDd32qldQ-KK5Zk2j_t592VC-Set66MrJnKMsuAwXXJFzCWY1nAj91ZTbXyoYbXTSWJGRelkB5pzKdV1qAzA7Hc79IQusS040PqbrzqmWomx6BXVtEDCTUU3gmhHGXJiH9lfHni324XB6LRTu3Q
+      cdi.kubevirt.io/storage.condition.running: "false"
+      cdi.kubevirt.io/storage.condition.running.message: Clone Complete
+      cdi.kubevirt.io/storage.condition.running.reason: Completed
+      cdi.kubevirt.io/storage.contentType: kubevirt
+      cdi.kubevirt.io/storage.extended.clone.token: eyJhbGciOiJQUzI1NiJ9.eyJleHAiOjIwODQzODM1MzksImlhdCI6MTc2OTAyMzUzOSwiaXNzIjoiY2RpLWRlcGxveW1lbnQiLCJuYW1lIjoicmhlbDktYWI0ZWMxNjA3N2ZlIiwibmFtZXNwYWNlIjoib3BlbnNoaWZ0LXZpcnR1YWxpemF0aW9uLW9zLWltYWdlcyIsIm5iZiI6MTc2OTAyMzUzOSwib3BlcmF0aW9uIjoiQ2xvbmUiLCJwYXJhbXMiOnsidGFyZ2V0TmFtZSI6InJoZWwtOS1hcm02NC1oYXJsZXF1aW4tc2FpbGZpc2gtMjMtdm9sdW1lIiwidGFyZ2V0TmFtZXNwYWNlIjoic3RhY2tyb3giLCJ1aWQiOiI0MGZkZTQyMy01Y2VmLTRhMjUtYmIzYy1hZTBmYTE3OGI1NGQifSwicmVzb3VyY2UiOnsiZ3JvdXAiOiIiLCJyZXNvdXJjZSI6InBlcnNpc3RlbnR2b2x1bWVjbGFpbXMiLCJ2ZXJzaW9uIjoidjEifX0.xr7kFBecV0XuaBOHuFbw5Xdz6FNGERC31dYG6_o26Zpsmxs_hF9xnDWLK0R_rbdkklDB8frc0yGrEdGtarn1QsQtgwV2K-Bj5IhS_kzEd1HbbZ6mCvzH5TzMjnqWwECqB3BpY9hJttQR0sqUVCnpwxr_66fSegqqsTqYUinHikWUYUr9FJyjTssomFqLpZ6NJDsxz-XFbM_rgJ3s_zsXdootMBYiettg00U-a-vA2EQM3_ZVs09vdpN8j_IxsAsdWpMtEg31eb59ieAZqhAF_sb2dhDWJGFBa6b93ZSNEalfT8SdBpoen4zNlQaiUqpNRFvrRf-fDT5US8f69SVBLw
+      cdi.kubevirt.io/storage.pod.restarts: "0"
+      cdi.kubevirt.io/storage.populator.progress: 100.0%
+      cdi.kubevirt.io/storage.preallocation.requested: "false"
+      cdi.kubevirt.io/storage.usePopulator: "true"
+      pv.kubernetes.io/bind-completed: "yes"
+      pv.kubernetes.io/bound-by-controller: "yes"
+      volume.beta.kubernetes.io/storage-provisioner: ebs.csi.aws.com
+      volume.kubernetes.io/selected-node: ip-10-0-0-14.ec2.internal
+      volume.kubernetes.io/storage-provisioner: ebs.csi.aws.com
+    finalizers:
+    - kubernetes.io/pvc-protection
+    labels:
+      app: containerized-data-importer
+      app.kubernetes.io/component: storage
+      app.kubernetes.io/managed-by: cdi-controller
+      app.kubernetes.io/part-of: hyperconverged-cluster
+      app.kubernetes.io/version: 4.18.23
+      instancetype.kubevirt.io/default-instancetype: u1.medium
+      instancetype.kubevirt.io/default-preference: rhel.9.arm64
+      kubevirt.io/created-by: c29f1e55-dc7a-4ca9-ad46-18ca03620dbd
+    name: rhel-9-arm64-harlequin-sailfish-23-volume
+    namespace: stackrox
+    ownerReferences:
+    - apiVersion: cdi.kubevirt.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: DataVolume
+      name: rhel-9-arm64-harlequin-sailfish-23-volume
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    dataSource:
+      apiGroup: cdi.kubevirt.io
+      kind: VolumeCloneSource
+      name: volume-clone-source-fbbf81a8-fe97-4aaf-a59c-f817a7c61e14
+    dataSourceRef:
+      apiGroup: cdi.kubevirt.io
+      kind: VolumeCloneSource
+      name: volume-clone-source-fbbf81a8-fe97-4aaf-a59c-f817a7c61e14
+    resources:
+      requests:
+        storage: "32212254720"
+    storageClassName: gp3-csi
+    volumeMode: Block
+    volumeName: pvc-cb09e3c1-0bb7-4834-a651-a2d33cf1d090
+  status:
+    accessModes:
+    - ReadWriteOnce
+    capacity:
+      storage: 30Gi
+    phase: Bound
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    annotations:
+      email: support@stackrox.com
+      meta.helm.sh/release-name: stackrox-central-services
+      meta.helm.sh/release-namespace: stackrox
+      owner: stackrox
+      pv.kubernetes.io/bind-completed: "yes"
+      pv.kubernetes.io/bound-by-controller: "yes"
+      volume.beta.kubernetes.io/storage-provisioner: ebs.csi.aws.com
+      volume.kubernetes.io/selected-node: ip-10-0-0-201.ec2.internal
+      volume.kubernetes.io/storage-provisioner: ebs.csi.aws.com
+    finalizers:
+    - kubernetes.io/pvc-protection
+    labels:
+      app.kubernetes.io/component: scanner-v4
+      app.kubernetes.io/instance: stackrox-central-services
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: stackrox
+      app.kubernetes.io/part-of: stackrox-central-services
+      app.kubernetes.io/version: 4.9.2
+      helm.sh/chart: stackrox-central-services-400.9.2
+      target.pvc.stackrox.io: scanner-v4-db
+    name: scanner-v4-db
+    namespace: stackrox
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Gi
+    storageClassName: gp3-csi
+    volumeMode: Filesystem
+    volumeName: pvc-e022fda3-720b-48dd-a10a-121f6bd5febd
+  status:
+    accessModes:
+    - ReadWriteOnce
+    capacity:
+      storage: 50Gi
+    phase: Bound
+kind: List
+metadata:

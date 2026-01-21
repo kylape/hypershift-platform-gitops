@@ -1,0 +1,303 @@
+apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: DaemonSet
+  metadata:
+    annotations:
+      email: support@stackrox.com
+      meta.helm.sh/release-name: stackrox-secured-cluster-services
+      meta.helm.sh/release-namespace: stackrox
+      owner: stackrox
+    labels:
+      app: collector
+      app.kubernetes.io/component: collector
+      app.kubernetes.io/instance: stackrox-secured-cluster-services
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: stackrox
+      app.kubernetes.io/part-of: stackrox-secured-cluster-services
+      app.kubernetes.io/version: 4.10.x-851-ge00b4bc697
+      auto-upgrade.stackrox.io/component: sensor
+      helm.sh/chart: stackrox-secured-cluster-services-400.10.0-851-ge00b4bc697
+      service: collector
+    name: collector
+    namespace: stackrox
+  spec:
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        service: collector
+    template:
+      metadata:
+        annotations:
+          email: support@stackrox.com
+          kubectl.kubernetes.io/restartedAt: "2026-01-21T14:35:19-05:00"
+          meta.helm.sh/release-name: stackrox-secured-cluster-services
+          meta.helm.sh/release-namespace: stackrox
+          openshift.io/required-scc: privileged
+          owner: stackrox
+        labels:
+          app: collector
+          app.kubernetes.io/component: collector
+          app.kubernetes.io/instance: stackrox-secured-cluster-services
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/name: stackrox
+          app.kubernetes.io/part-of: stackrox-secured-cluster-services
+          app.kubernetes.io/version: 4.10.x-851-ge00b4bc697
+          helm.sh/chart: stackrox-secured-cluster-services-400.10.0-851-ge00b4bc697
+          service: collector
+        namespace: stackrox
+      spec:
+        containers:
+        - env:
+          - name: COLLECTOR_CONFIG
+            value: '{"tlsConfig":{"caCertPath":"/var/run/secrets/stackrox.io/certs/ca.pem","clientCertPath":"/var/run/secrets/stackrox.io/certs/cert.pem","clientKeyPath":"/var/run/secrets/stackrox.io/certs/key.pem"}}'
+          - name: COLLECTION_METHOD
+            value: CORE_BPF
+          - name: GRPC_SERVER
+            value: sensor.stackrox.svc:443
+          - name: SNI_HOSTNAME
+            value: sensor.stackrox.svc
+          image: quay.io/rhacs-eng/collector:3.23.x-108-g59e1de717c
+          imagePullPolicy: IfNotPresent
+          name: collector
+          resources:
+            limits:
+              cpu: 750m
+              memory: 1Gi
+            requests:
+              cpu: 50m
+              memory: 320Mi
+          securityContext:
+            capabilities:
+              drop:
+              - NET_RAW
+            privileged: true
+            readOnlyRootFilesystem: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /host/proc
+            mountPropagation: HostToContainer
+            name: proc-ro
+            readOnly: true
+          - mountPath: /host/etc
+            mountPropagation: HostToContainer
+            name: etc-ro
+            readOnly: true
+          - mountPath: /host/usr/lib
+            mountPropagation: HostToContainer
+            name: usr-lib-ro
+            readOnly: true
+          - mountPath: /host/sys
+            mountPropagation: HostToContainer
+            name: sys-ro
+            readOnly: true
+          - mountPath: /host/dev
+            mountPropagation: HostToContainer
+            name: dev-ro
+            readOnly: true
+          - mountPath: /run/secrets/stackrox.io/certs/
+            name: certs
+            readOnly: true
+          - mountPath: /etc/stackrox
+            name: collector-config
+            readOnly: true
+          - mountPath: /var/profiles
+            name: collector-profiles
+        - command:
+          - stackrox/compliance
+          env:
+          - name: ROX_MEMLIMIT
+            valueFrom:
+              resourceFieldRef:
+                divisor: "0"
+                resource: limits.memory
+          - name: GOMAXPROCS
+            valueFrom:
+              resourceFieldRef:
+                divisor: "0"
+                resource: limits.cpu
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: ROX_CALL_NODE_INVENTORY_ENABLED
+            value: "true"
+          - name: ROX_NODE_INDEX_HOST_PATH
+            value: /hostindex
+          - name: ROX_METRICS_PORT
+            value: disabled
+          - name: ROX_NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: ROX_ADVERTISED_ENDPOINT
+            value: sensor.stackrox.svc:443
+          - name: ROX_NODE_SCANNING_ENDPOINT
+            value: 127.0.0.1:8444
+          - name: ROX_VIRTUAL_MACHINES
+            value: "true"
+          image: quay.io/rhacs-eng/main:4.10.x-850-g437c6c281c
+          imagePullPolicy: IfNotPresent
+          name: compliance
+          resources:
+            limits:
+              cpu: "1"
+              memory: 2Gi
+            requests:
+              cpu: 10m
+              memory: 10Mi
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsUser: 0
+            seLinuxOptions:
+              type: container_runtime_t
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/ssl/
+            name: etc-ssl
+          - mountPath: /etc/pki/ca-trust/
+            name: etc-pki-volume
+          - mountPath: /host
+            mountPropagation: HostToContainer
+            name: host-root-ro
+            readOnly: true
+          - mountPath: /run/secrets/stackrox.io/certs/
+            name: certs
+            readOnly: true
+          - mountPath: /hostindex/usr/share
+            name: usr-share-ro
+            readOnly: true
+          - mountPath: /tmp
+            name: index-volume
+        - command:
+          - /scanner
+          - --nodeinventory
+          - --config=
+          - ""
+          env:
+          - name: ROX_NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: quay.io/rhacs-eng/scanner-slim:2.38.x-24-gcd5fb7a6d1
+          imagePullPolicy: IfNotPresent
+          name: node-inventory
+          ports:
+          - containerPort: 8444
+            name: grpc
+            protocol: TCP
+          resources:
+            limits:
+              cpu: "1"
+              memory: 500Mi
+            requests:
+              cpu: 10m
+              memory: 10Mi
+          securityContext:
+            privileged: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /host
+            mountPropagation: HostToContainer
+            name: host-root-ro
+            readOnly: true
+          - mountPath: /tmp/
+            name: tmp-volume
+          - mountPath: /cache
+            name: cache-volume
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: collector
+        serviceAccountName: collector
+        terminationGracePeriodSeconds: 30
+        tolerations:
+        - operator: Exists
+        volumes:
+        - hostPath:
+            path: /proc
+            type: ""
+          name: proc-ro
+        - hostPath:
+            path: /etc
+            type: ""
+          name: etc-ro
+        - hostPath:
+            path: /usr/lib
+            type: ""
+          name: usr-lib-ro
+        - hostPath:
+            path: /sys/
+            type: ""
+          name: sys-ro
+        - hostPath:
+            path: /dev
+            type: ""
+          name: dev-ro
+        - name: certs
+          secret:
+            defaultMode: 420
+            secretName: tls-cert-collector
+        - hostPath:
+            path: /
+            type: ""
+          name: host-root-ro
+        - hostPath:
+            path: /usr/share
+            type: ""
+          name: usr-share-ro
+        - emptyDir: {}
+          name: index-volume
+        - emptyDir: {}
+          name: etc-ssl
+        - emptyDir: {}
+          name: etc-pki-volume
+        - emptyDir: {}
+          name: tmp-volume
+        - emptyDir: {}
+          name: collector-profiles
+        - emptyDir:
+            sizeLimit: 200Mi
+          name: cache-volume
+        - configMap:
+            defaultMode: 420
+            name: collector-config
+            optional: true
+          name: collector-config
+    updateStrategy:
+      rollingUpdate:
+        maxSurge: 0
+        maxUnavailable: 1
+      type: RollingUpdate
+  status:
+    currentNumberScheduled: 3
+    desiredNumberScheduled: 3
+    numberAvailable: 3
+    numberMisscheduled: 0
+    numberReady: 3
+    observedGeneration: 8
+    updatedNumberScheduled: 3
+kind: List
+metadata:
