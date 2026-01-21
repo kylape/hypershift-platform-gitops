@@ -1,0 +1,27 @@
+apiVersion: platform.stackrox.io/v1alpha1
+kind: Central
+metadata:
+  name: stackrox-central-services
+  namespace: stackrox
+spec:
+  central:
+    exposure:
+      route:
+        enabled: true
+    persistence:
+      persistentVolumeClaim:
+        claimName: central-db
+  scannerV4:
+    indexer:
+      scaling:
+        autoScaling: Disabled
+        replicas: 1
+    matcher:
+      scaling:
+        autoScaling: Disabled
+        replicas: 1
+    scannerComponent: Default
+  customize:
+    envVars:
+      - name: ROX_VIRTUAL_MACHINES
+        value: "true"
