@@ -1,20 +1,13 @@
-apiVersion: v1
-items:
-- apiVersion: operators.coreos.com/v1
-  kind: OperatorGroup
-  metadata:
-    annotations:
-      argocd.argoproj.io/sync-wave: "0"
-      olm.providedAPIs: AAQ.v1alpha1.aaq.kubevirt.io,CDI.v1beta1.cdi.kubevirt.io,HostPathProvisioner.v1beta1.hostpathprovisioner.kubevirt.io,HyperConverged.v1beta1.hco.kubevirt.io,KubeVirt.v1.kubevirt.io,NetworkAddonsConfig.v1.networkaddonsoperator.network.kubevirt.io,SSP.v1beta2.ssp.kubevirt.io,SSP.v1beta3.ssp.kubevirt.io
-    generateName: openshift-cnv-
-    name: openshift-cnv-wltb4
-    namespace: openshift-cnv
-  spec:
-    targetNamespaces:
-    - openshift-cnv
-    upgradeStrategy: Default
-    lastUpdated: "2026-01-21T18:26:22Z"
-    namespaces:
-    - openshift-cnv
-kind: List
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
 metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+    olm.providedAPIs: AAQ.v1alpha1.aaq.kubevirt.io,CDI.v1beta1.cdi.kubevirt.io,HostPathProvisioner.v1beta1.hostpathprovisioner.kubevirt.io,HyperConverged.v1beta1.hco.kubevirt.io,KubeVirt.v1.kubevirt.io,NetworkAddonsConfig.v1.networkaddonsoperator.network.kubevirt.io,SSP.v1beta2.ssp.kubevirt.io,SSP.v1beta3.ssp.kubevirt.io
+  generateName: openshift-cnv-
+  name: openshift-cnv-wltb4
+  namespace: openshift-cnv
+spec:
+  targetNamespaces:
+  - openshift-cnv
+  upgradeStrategy: Default
