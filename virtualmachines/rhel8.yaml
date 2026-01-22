@@ -1,0 +1,51 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: rhel-8-gold-scorpion-66
+spec:
+  dataVolumeTemplates:
+    - metadata:
+        name: rhel-8-gold-scorpion-66-volume
+      spec:
+        sourceRef:
+          kind: DataSource
+          name: rhel8
+          namespace: openshift-virtualization-os-images
+        storage:
+          resources:
+            requests:
+              storage: '32212254720'
+          storageClassName: gp3-csi
+  instancetype:
+    name: u1.medium
+  preference:
+    name: rhel.8
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        network.kubevirt.io/headlessService: headless
+    spec:
+      domain:
+        devices:
+          autoattachPodInterface: false
+          disks: []
+          interfaces:
+            - masquerade: {}
+              name: default
+      networks:
+        - name: default
+          pod: {}
+      subdomain: headless
+      volumes:
+        - dataVolume:
+            name: rhel-8-gold-scorpion-66-volume
+          name: rootdisk
+        - cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              chpasswd:
+                expire: false
+              password: i4bo-qaj1-za5i
+              user: rhel
+          name: cloudinitdisk
