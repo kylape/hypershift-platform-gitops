@@ -1,0 +1,25 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: stackrox-operator
+  namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: hypershift-platform
+  source:
+    repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+    targetRevision: main
+    path: platform/stackrox-operator
+    directory:
+      include: "{namespace.yaml,operator.yaml}"
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
