@@ -29,7 +29,6 @@ spec:
       domain:
         devices:
           autoattachPodInterface: false
-          disks: []
           interfaces:
             - masquerade: {}
               name: default
