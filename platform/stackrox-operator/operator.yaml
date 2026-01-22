@@ -4313,6 +4313,7 @@ spec:
           valueFrom:
             resourceFieldRef:
               containerName: manager
+              divisor: '0'
               resource: limits.memory
         image: quay.io/stackrox-io/stackrox-operator:4.10.0-854-g7c1fb51a41
         livenessProbe:
