@@ -1,0 +1,21 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: devcontainer
+  namespace: openshift-gitops
+spec:
+  project: hypershift-platform
+  source:
+    repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+    targetRevision: main
+    path: devcontainer
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: devcontainer
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
