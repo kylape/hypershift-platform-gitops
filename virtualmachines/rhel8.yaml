@@ -1,11 +1,11 @@
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: rhel-8-gold-scorpion-66
+  name: rhel-8-acs-test
 spec:
   dataVolumeTemplates:
     - metadata:
-        name: rhel-8-gold-scorpion-66-volume
+        name: rhel-8-acs-test
       spec:
         sourceRef:
           kind: DataSource
@@ -34,17 +34,20 @@ spec:
               name: default
       networks:
         - name: default
-          pod: {}
       subdomain: headless
       volumes:
         - dataVolume:
-            name: rhel-8-gold-scorpion-66-volume
+            name: rhel-8-acs-test
           name: rootdisk
         - cloudInitNoCloud:
             userData: |
               #cloud-config
-              chpasswd:
-                expire: false
-              password: i4bo-qaj1-za5i
               user: rhel
           name: cloudinitdisk
+      accessCredentials:
+        - sshPublicKey:
+            propagationMethod:
+              noCloud: {}
+            source:
+              secret:
+                secretName: klape-public-ssh

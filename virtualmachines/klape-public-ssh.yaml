@@ -1,0 +1,7 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: klape-public-ssh
+data:
+  key: c3NoLWVkMjU1MTkgQUFBQUMzTnphQzFsWkRJMU5URTVBQUFBSUdzdlNCYTg1QnZZQzVSVHBubTlLRjU5RlFzbE9sNjJUdnFtb2lZUytvaHg=
+type: Opaque
