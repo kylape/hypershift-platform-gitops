@@ -29,6 +29,7 @@ spec:
       domain:
         devices:
           autoattachPodInterface: false
+          autoattachVSOCK: true
           interfaces:
             - masquerade: {}
               name: default
