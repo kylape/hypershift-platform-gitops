@@ -43,15 +43,26 @@ spec:
         - cloudInitNoCloud:
             userData: |
               #cloud-config
+              users:
+                - name: cloud-user
+                  gecos: Cloud User
+                  groups: wheel
+                  sudo: ALL=(ALL) NOPASSWD:ALL
+                  shell: /bin/bash
+                  homedir: /home/cloud-user
               runcmd:
-                - echo "Cloud-init complete"
+                - mkdir -p /home/cloud-user/.ssh
+                - chmod 700 /home/cloud-user/.ssh
+                - touch /home/cloud-user/.ssh/authorized_keys
+                - chmod 600 /home/cloud-user/.ssh/authorized_keys
+                - chown -R cloud-user:cloud-user /home/cloud-user/.ssh
           name: cloudinitdisk
       accessCredentials:
         - sshPublicKey:
             propagationMethod:
               qemuGuestAgent:
                 users:
-                  - root
+                  - cloud-user
             source:
               secret:
                 secretName: klape-public-ssh
