@@ -27,6 +27,10 @@ spec:
         network.kubevirt.io/headlessService: headless
     spec:
       domain:
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: false
         devices:
           autoattachPodInterface: false
           autoattachVSOCK: true
