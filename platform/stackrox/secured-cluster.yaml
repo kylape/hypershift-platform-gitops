@@ -14,3 +14,7 @@ spec:
     collector:
       imageFlavor: Regular
     taintToleration: TolerateTaints
+  customize:
+    envVars:
+      - name: ROX_VIRTUAL_MACHINES
+        value: "true"
