@@ -51,7 +51,7 @@ spec:
             propagationMethod:
               qemuGuestAgent:
                 users:
-                  - cloud-user
+                  - root
             source:
               secret:
                 secretName: klape-public-ssh
