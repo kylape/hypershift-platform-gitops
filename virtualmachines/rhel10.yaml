@@ -48,7 +48,9 @@ spec:
       accessCredentials:
         - sshPublicKey:
             propagationMethod:
-              noCloud: {}
+              qemuGuestAgent:
+                users:
+                  - rhel
             source:
               secret:
                 secretName: klape-public-ssh
