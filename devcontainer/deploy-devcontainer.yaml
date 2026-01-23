@@ -1,8 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    openshift.io/required-scc: restricted
   labels:
     app: devcontainer
   name: devcontainer
@@ -13,6 +11,8 @@ spec:
       app: devcontainer
   template:
     metadata:
+      annotations:
+        openshift.io/required-scc: restricted
       labels:
         app: devcontainer
     spec:
