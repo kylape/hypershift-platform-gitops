@@ -11,9 +11,7 @@ spec:
   source:
     repoURL: https://github.com/kylape/hypershift-platform-gitops.git
     targetRevision: main
-    path: platform/stackrox-operator
-    directory:
-      include: central.yaml
+    path: platform/stackrox
   destination:
     server: https://kubernetes.default.svc
     namespace: stackrox
