@@ -44,6 +44,10 @@ spec:
             userData: |
               #cloud-config
               user: cloud-user
+              users:
+                - name: cloud-user
+                  sudo: ALL=(ALL) NOPASSWD:ALL
+                  shell: /bin/bash
           name: cloudinitdisk
       accessCredentials:
         - sshPublicKey:
