@@ -43,14 +43,14 @@ spec:
         - cloudInitNoCloud:
             userData: |
               #cloud-config
-              user: rhel
+              user: cloud-user
           name: cloudinitdisk
       accessCredentials:
         - sshPublicKey:
             propagationMethod:
               qemuGuestAgent:
                 users:
-                  - rhel
+                  - cloud-user
             source:
               secret:
                 secretName: klape-public-ssh
