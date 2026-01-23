@@ -44,11 +44,14 @@ spec:
         - cloudInitNoCloud:
             userData: |
               #cloud-config
-              user: cloud-user
-              password: testpass123
-              chpasswd:
-                expire: false
+              users:
+                - default
+                - name: cloud-user
+                  groups: wheel
+                  sudo: ALL=(ALL) NOPASSWD:ALL
+                  lock_passwd: false
+                  plain_text_passwd: testpass123
+                  ssh_authorized_keys:
+                    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDI3MQuBoWRq+Cad6pu/QurHr4jVYGBY+8LHZ43DeiLGYdOPZRqwKqDZrvizRZkAkPV7afsSxuQ6YpcAEP42YioJTHg2zmIAYY8DelKrdUblWL+lm21sBCK5CsGTSKw3FkHqXk+UMENLis9kMy1XGwfYXqbC5BjyQYc762AgIr/6EdlRDTqUuVNeh2N6CupApGOaKwC0KtlonX9MetiHGxiHXKjtY4mOLPhRMCNsNKf+a1Yyi9BbPLYlLxx++Z85owEuJvniszu5rv+tAulvXvj7dbyKjyJQuZtzzvaafZlvvXGSSwBpazwZHkqZpdGUTc5ObKRnTNVDNq4HxpW0OBX klape@klape.remote.csb
               ssh_pwauth: true
-              ssh_authorized_keys:
-                - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDI3MQuBoWRq+Cad6pu/QurHr4jVYGBY+8LHZ43DeiLGYdOPZRqwKqDZrvizRZkAkPV7afsSxuQ6YpcAEP42YioJTHg2zmIAYY8DelKrdUblWL+lm21sBCK5CsGTSKw3FkHqXk+UMENLis9kMy1XGwfYXqbC5BjyQYc762AgIr/6EdlRDTqUuVNeh2N6CupApGOaKwC0KtlonX9MetiHGxiHXKjtY4mOLPhRMCNsNKf+a1Yyi9BbPLYlLxx++Z85owEuJvniszu5rv+tAulvXvj7dbyKjyJQuZtzzvaafZlvvXGSSwBpazwZHkqZpdGUTc5ObKRnTNVDNq4HxpW0OBX klape@klape.remote.csb
           name: cloudinitdisk
