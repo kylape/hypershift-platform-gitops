@@ -27,6 +27,9 @@ spec:
         network.kubevirt.io/headlessService: headless
     spec:
       domain:
+        features:
+          smm:
+            enabled: false
         firmware:
           bootloader:
             efi:
