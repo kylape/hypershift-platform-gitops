@@ -6,6 +6,7 @@ metadata:
 spec:
   clusterName: poc-cluster
   replicas: 2
+  arch: arm64
   management:
     autoRepair: true
     replace:
@@ -26,3 +27,4 @@ spec:
         persistent:
           size: 100Gi
         type: Persistent
+        containerDiskImage: quay.io/klape/rhcos-containerdisk:4.18-arm64
