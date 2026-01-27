@@ -1,0 +1,104 @@
+# HyperShift Image Build PipelineRun
+#
+# This pipeline builds the HyperShift operator image from source and pushes
+# to quay.io. Before running, ensure:
+#
+# 1. The hypershift-build namespace exists:
+#    kubectl create ns hypershift-build
+#
+# 2. Quay.io credentials are configured:
+#    kubectl create secret generic quay-creds \
+#      --from-file=.dockerconfigjson=$HOME/.docker/config.json \
+#      --type=kubernetes.io/dockerconfigjson \
+#      -n hypershift-build
+#
+# 3. Update the IMAGE and GIT_REVISION parameters below as needed
+#
+# Run with:
+#    kubectl create -f pipelinerun.yaml
+#
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: hypershift-build-
+  namespace: hypershift-build
+spec:
+  pipelineSpec:
+    params:
+    - name: IMAGE
+      type: string
+    - name: GIT_URL
+      type: string
+    - name: GIT_REVISION
+      type: string
+    workspaces:
+    - name: source
+    - name: dockerconfig
+    tasks:
+    - name: git-clone
+      taskRef:
+        resolver: cluster
+        params:
+        - name: kind
+          value: task
+        - name: name
+          value: git-clone
+        - name: namespace
+          value: openshift-pipelines
+      params:
+      - name: URL
+        value: $(params.GIT_URL)
+      - name: REVISION
+        value: $(params.GIT_REVISION)
+      - name: DEPTH
+        value: "1"
+      workspaces:
+      - name: output
+        workspace: source
+    - name: build-and-push
+      runAfter:
+      - git-clone
+      taskRef:
+        resolver: cluster
+        params:
+        - name: kind
+          value: task
+        - name: name
+          value: buildah
+        - name: namespace
+          value: openshift-pipelines
+      params:
+      - name: IMAGE
+        value: $(params.IMAGE)
+      - name: DOCKERFILE
+        value: ./Dockerfile.tekton
+      - name: CONTEXT
+        value: .
+      - name: FORMAT
+        value: oci
+      - name: BUILD_EXTRA_ARGS
+        value: "--layers"
+      workspaces:
+      - name: source
+        workspace: source
+      - name: dockerconfig
+        workspace: dockerconfig
+  params:
+  - name: IMAGE
+    value: quay.io/klape/hypershift:arm64-kubevirt-dns-fix
+  - name: GIT_URL
+    value: https://github.com/kylape/hypershift.git
+  - name: GIT_REVISION
+    value: arm64-kubevirt-support
+  workspaces:
+  - name: source
+    volumeClaimTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+  - name: dockerconfig
+    secret:
+      secretName: quay-creds
