@@ -9,12 +9,11 @@ metadata:
 spec:
   project: hypershift-platform
   source:
-    repoURL: https://github.com/tektoncd/pipeline.git
-    targetRevision: v0.68.0
-    path: config
+    repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+    targetRevision: main
+    path: platform/tekton
   destination:
     server: https://kubernetes.default.svc
-    namespace: tekton-pipelines
   syncPolicy:
     automated:
       prune: true
