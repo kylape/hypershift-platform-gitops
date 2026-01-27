@@ -5,8 +5,8 @@ metadata:
   name: hypershift-operator
   namespace: openshift-gitops
   annotations:
-    # Sync-waves are defined within the manifests (CRDs=0, operator=1)
-    argocd.argoproj.io/sync-wave: "0"
+    # Sync-waves within manifests: CRDs=0, operator=1
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   project: hypershift-platform
   source:
