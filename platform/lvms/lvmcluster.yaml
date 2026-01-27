@@ -24,8 +24,6 @@ spec:
           optionalPaths:
             - /dev/nvme0n1
             - /dev/nvme1n1
-            - /dev/nvme3n1
-            - /dev/nvme4n1
         thinPoolConfig:
           name: thin-pool-nvme
           overprovisionRatio: 10
