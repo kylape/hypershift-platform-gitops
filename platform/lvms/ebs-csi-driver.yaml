@@ -1,0 +1,13 @@
+apiVersion: operator.openshift.io/v1
+kind: ClusterCSIDriver
+metadata:
+  name: ebs.csi.aws.com
+  annotations:
+    argocd.argoproj.io/sync-options: Replace=true
+spec:
+  logLevel: Normal
+  managementState: Managed
+  operatorLogLevel: Normal
+  # Stop the operator from reconciling the storage class so we can
+  # set lvms-nvme as the default instead of gp3-csi
+  storageClassState: Unmanaged
