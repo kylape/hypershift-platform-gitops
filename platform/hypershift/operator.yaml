@@ -506,7 +506,7 @@ spec:
           value: KubeVirt
         - name: IMAGE_KUBEVIRT_CAPI_PROVIDER
           value: quay.io/capk/capk-manager:v0.11.1
-        image: quay.io/klape/hypershift:arm64-kubevirt
+        image: quay.io/klape/hypershift:arm64-kubevirt-dns-fix
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
@@ -562,7 +562,7 @@ spec:
         - init
         command:
         - /usr/bin/hypershift-operator
-        image: quay.io/klape/hypershift:arm64-kubevirt
+        image: quay.io/klape/hypershift:arm64-kubevirt-dns-fix
         imagePullPolicy: IfNotPresent
         name: init-environment
         resources: {}
