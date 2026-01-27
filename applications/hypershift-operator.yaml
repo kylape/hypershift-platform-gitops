@@ -5,15 +5,14 @@ metadata:
   name: hypershift-operator
   namespace: openshift-gitops
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    # Sync-waves are defined within the manifests (CRDs=0, operator=1)
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   project: hypershift-platform
   source:
     repoURL: https://github.com/kylape/hypershift-platform-gitops.git
     targetRevision: main
     path: platform/hypershift
-    directory:
-      include: operator.yaml
   destination:
     server: https://kubernetes.default.svc
   syncPolicy:
@@ -22,3 +21,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - Replace=true

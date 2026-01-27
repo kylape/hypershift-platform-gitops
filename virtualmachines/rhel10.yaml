@@ -15,7 +15,6 @@ spec:
           resources:
             requests:
               storage: '32212254720'
-          storageClassName: gp3-csi
   instancetype:
     name: u1.medium
   preference:
