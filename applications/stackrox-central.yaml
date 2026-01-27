@@ -5,7 +5,8 @@ metadata:
   name: stackrox-central
   namespace: openshift-gitops
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    # Deploy after LVMS and stackrox-operator so PVCs use lvms-nvme
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   project: hypershift-platform
   source:

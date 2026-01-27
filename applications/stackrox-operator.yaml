@@ -5,7 +5,8 @@ metadata:
   name: stackrox-operator
   namespace: openshift-gitops
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    # Deploy after LVMS (sync-wave 1) so storage class is ready
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   project: hypershift-platform
   source:
