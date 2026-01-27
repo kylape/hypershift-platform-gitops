@@ -20,12 +20,7 @@ spec:
                   values:
                     - m7gd.metal
         deviceSelector:
-          # Auto-discover NVMe instance storage disks (non-partitioned)
-          # LVMS will only use disks that are:
-          # - Not mounted
-          # - Have no partitions
-          # - Have no LVM signature
-          # - Have no filesystem
+          forceWipeDevicesAndDestroyAllData: true
           optionalPaths:
             - /dev/nvme0n1
             - /dev/nvme1n1
