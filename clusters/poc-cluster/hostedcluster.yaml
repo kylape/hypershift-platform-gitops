@@ -38,7 +38,9 @@ spec:
         type: Route
     - service: Ignition
       servicePublishingStrategy:
-        type: Route
+        type: NodePort
+        nodePort:
+          port: 31443
     - service: OVNSbDb
       servicePublishingStrategy:
         type: Route
