@@ -6,7 +6,7 @@ metadata:
 spec:
   clusterName: poc-cluster
   replicas: 2
-  arch: arm64
+  arch: amd64
   management:
     autoRepair: true
     replace:
@@ -24,8 +24,8 @@ spec:
         cores: 8
         memory: 32Gi
       rootVolume:
-        diskImage:
-          containerDiskImage: quay.io/klape/rhcos-containerdisk:4.18-arm64
         persistent:
           size: 100Gi
         type: Persistent
+      nodeSelector:
+        kubernetes.io/arch: amd64
