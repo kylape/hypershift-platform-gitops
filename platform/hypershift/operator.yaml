@@ -528,7 +528,7 @@ spec:
               value: KubeVirt
             - name: IMAGE_KUBEVIRT_CAPI_PROVIDER
               value: quay.io/capk/capk-manager:v0.11.1
-          image: quay.io/hypershift/hypershift-operator:latest
+          image: registry.redhat.io/multicluster-engine/hypershift-rhel9-operator:v2.8
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 5
@@ -584,7 +584,7 @@ spec:
             - init
           command:
             - /usr/bin/hypershift-operator
-          image: quay.io/hypershift/hypershift-operator:latest
+          image: registry.redhat.io/multicluster-engine/hypershift-rhel9-operator:v2.8
           imagePullPolicy: IfNotPresent
           name: init-environment
           resources: {}
