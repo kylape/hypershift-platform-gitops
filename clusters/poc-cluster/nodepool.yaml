@@ -26,6 +26,7 @@ spec:
       rootVolume:
         persistent:
           size: 100Gi
+          storageClass: gp3-csi
         type: Persistent
       nodeSelector:
         kubernetes.io/arch: amd64
