@@ -3,6 +3,13 @@ kind: NodePool
 metadata:
   name: poc-cluster-workers
   namespace: clusters
+  annotations:
+    # Enable SecureBoot and SMM for x86_64 UEFI boot
+    hypershift.openshift.io/kubevirt-vm-jsonpatch: |
+      [
+        {"op": "add", "path": "/spec/template/spec/domain/firmware", "value": {"bootloader": {"efi": {"secureBoot": true}}}},
+        {"op": "add", "path": "/spec/template/spec/domain/features", "value": {"smm": {"enabled": true}}}
+      ]
 spec:
   clusterName: poc-cluster
   replicas: 2
