@@ -4,9 +4,12 @@ metadata:
   name: poc-cluster-workers
   namespace: clusters
   annotations:
-    # Configure EFI boot without SecureBoot for mixed-arch cluster compatibility
+    # Configure x86 VMs for mixed-arch cluster with MultiArchitecture feature gate
     hypershift.openshift.io/kubevirt-vm-jsonpatch: |
       [
+        {"op": "add", "path": "/spec/architecture", "value": "amd64"},
+        {"op": "add", "path": "/spec/template/spec/architecture", "value": "amd64"},
+        {"op": "add", "path": "/spec/template/spec/domain/machine", "value": {"type": "q35"}},
         {"op": "add", "path": "/spec/template/spec/domain/firmware", "value": {"bootloader": {"efi": {"secureBoot": false}}}},
         {"op": "add", "path": "/spec/template/spec/domain/features", "value": {"smm": {"enabled": false}}}
       ]
