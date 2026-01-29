@@ -1,10 +1,9 @@
 apiVersion: scheduling.k8s.io/v1
-description: This priority class should be used for hypershift control plane pods not critical to serving the API.
+description: This priority class should be used for hypershift control plane pods
+  not critical to serving the API.
 kind: PriorityClass
 metadata:
   name: hypershift-control-plane
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 preemptionPolicy: Never
 value: 100000000
 ---
@@ -13,18 +12,15 @@ description: This priority class should be used for hypershift etcd pods.
 kind: PriorityClass
 metadata:
   name: hypershift-etcd
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 preemptionPolicy: Never
 value: 100002000
 ---
 apiVersion: scheduling.k8s.io/v1
-description: This priority class should be used for hypershift control plane pods critical to serving the API.
+description: This priority class should be used for hypershift control plane pods
+  critical to serving the API.
 kind: PriorityClass
 metadata:
   name: hypershift-api-critical
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 preemptionPolicy: Never
 value: 100001000
 ---
@@ -33,8 +29,6 @@ description: This priority class is used for hypershift operator pods
 kind: PriorityClass
 metadata:
   name: hypershift-operator
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 value: 100003000
 ---
 apiVersion: v1
@@ -44,8 +38,6 @@ metadata:
     hypershift.openshift.io/monitoring: "true"
     openshift.io/cluster-monitoring: "true"
   name: hypershift
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 spec: {}
 status: {}
 ---
@@ -54,404 +46,392 @@ kind: ServiceAccount
 metadata:
   name: operator
   namespace: hypershift
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: hypershift-operator
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 rules:
-  - apiGroups:
-      - hypershift.openshift.io
-    resources:
-      - '*'
-    verbs:
-      - '*'
-  - apiGroups:
-      - certificates.hypershift.openshift.io
-    resources:
-      - '*'
-    verbs:
-      - '*'
-  - apiGroups:
-      - scheduling.hypershift.openshift.io
-    resources:
-      - '*'
-    verbs:
-      - '*'
-  - apiGroups:
-      - auditlogpersistence.hypershift.openshift.io
-    resources:
-      - '*'
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - config.openshift.io
-    resources:
-      - '*'
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - apiextensions.k8s.io
-    resources:
-      - customresourcedefinitions
-    verbs:
-      - '*'
-  - apiGroups:
-      - batch
-    resources:
-      - cronjobs
-      - jobs
-    verbs:
-      - '*'
-  - apiGroups:
-      - coordination.k8s.io
-    resources:
-      - leases
-    verbs:
-      - '*'
-  - apiGroups:
-      - networking.k8s.io
-    resources:
-      - networkpolicies
-    verbs:
-      - '*'
-  - apiGroups:
-      - bootstrap.cluster.x-k8s.io
-      - controlplane.cluster.x-k8s.io
-      - infrastructure.cluster.x-k8s.io
-      - machines.cluster.x-k8s.io
-      - exp.infrastructure.cluster.x-k8s.io
-      - addons.cluster.x-k8s.io
-      - exp.cluster.x-k8s.io
-      - cluster.x-k8s.io
-      - monitoring.coreos.com
-      - monitoring.rhobs
-    resources:
-      - '*'
-    verbs:
-      - '*'
-  - apiGroups:
-      - policy
-    resources:
-      - poddisruptionbudgets
-    verbs:
-      - '*'
-  - apiGroups:
-      - operator.openshift.io
-    resources:
-      - '*'
-    verbs:
-      - '*'
-  - apiGroups:
-      - route.openshift.io
-    resources:
-      - '*'
-    verbs:
-      - '*'
-  - apiGroups:
-      - image.openshift.io
-    resources:
-      - '*'
-    verbs:
-      - '*'
-  - apiGroups:
-      - security.openshift.io
-    resources:
-      - securitycontextconstraints
-    verbs:
-      - '*'
-  - apiGroups:
-      - rbac.authorization.k8s.io
-    resources:
-      - '*'
-    verbs:
-      - get
-      - list
-      - watch
-      - create
-      - update
-      - patch
-      - delete
-      - deletecollection
-  - apiGroups:
-      - ""
-    resources:
-      - events
-      - configmaps
-      - configmaps/finalizers
-      - persistentvolumeclaims
-      - pods
-      - pods/log
-      - secrets
-      - nodes
-      - namespaces
-      - serviceaccounts
-      - services
-      - endpoints
-    verbs:
-      - '*'
-  - apiGroups:
-      - ""
-    resources:
-      - persistentvolumes
-    verbs:
-      - get
-  - apiGroups:
-      - apps
-    resources:
-      - deployments
-      - replicasets
-      - statefulsets
-    verbs:
-      - '*'
-  - apiGroups:
-      - etcd.database.coreos.com
-    resources:
-      - '*'
-    verbs:
-      - '*'
-  - apiGroups:
-      - machine.openshift.io
-    resources:
-      - '*'
-    verbs:
-      - '*'
-  - apiGroups:
-      - monitoring.coreos.com
-      - monitoring.rhobs
-    resources:
-      - podmonitors
-    verbs:
-      - get
-      - list
-      - watch
-      - create
-      - update
-  - apiGroups:
-      - capi-provider.agent-install.openshift.io
-    resources:
-      - '*'
-    verbs:
-      - '*'
-  - apiGroups:
-      - operator.openshift.io
-    resources:
-      - ingresscontrollers
-    verbs:
-      - '*'
-  - apiGroups:
-      - kubevirt.io
-    resources:
-      - virtualmachineinstances
-      - virtualmachines
-      - virtualmachines/finalizers
-    verbs:
-      - '*'
-  - apiGroups:
-      - cdi.kubevirt.io
-    resources:
-      - datavolumes
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - ipam.cluster.x-k8s.io
-    resources:
-      - ipaddressclaims
-      - ipaddressclaims/status
-    verbs:
-      - '*'
-  - apiGroups:
-      - ipam.cluster.x-k8s.io
-    resources:
-      - ipaddresses
-      - ipaddresses/status
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - update
-      - watch
-  - apiGroups:
-      - openstack.k-orc.cloud
-    resources:
-      - images
-      - images/status
-    verbs:
-      - '*'
-  - apiGroups:
-      - subresources.kubevirt.io
-    resources:
-      - virtualmachineinstances/addvolume
-      - virtualmachineinstances/removevolume
-      - virtualmachines/addvolume
-      - virtualmachines/removevolume
-    verbs:
-      - update
-  - apiGroups:
-      - cdi.kubevirt.io
-    resources:
-      - datavolumes
-    verbs:
-      - '*'
-  - apiGroups:
-      - agent-install.openshift.io
-    resources:
-      - agents
-    verbs:
-      - '*'
-  - apiGroups:
-      - snapshot.storage.k8s.io
-    resources:
-      - volumesnapshots
-    verbs:
-      - get
-      - create
-      - delete
-  - apiGroups:
-      - extensions.hive.openshift.io
-    resources:
-      - agentclusterinstalls
-    verbs:
-      - '*'
-  - apiGroups:
-      - hive.openshift.io
-    resources:
-      - clusterdeployments
-    verbs:
-      - '*'
-  - apiGroups:
-      - discovery.k8s.io
-    resources:
-      - endpointslices
-      - endpointslices/restricted
-    verbs:
-      - '*'
-  - apiGroups:
-      - admissionregistration.k8s.io
-    resourceNames:
-      - hypershift.openshift.io
-    resources:
-      - validatingwebhookconfigurations
-    verbs:
-      - delete
-  - apiGroups:
-      - certificates.k8s.io
-    resources:
-      - certificatesigningrequests
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - certificates.k8s.io
-    resources:
-      - certificatesigningrequests/status
-    verbs:
-      - patch
-  - apiGroups:
-      - certificates.k8s.io
-    resources:
-      - certificatesigningrequests/approval
-    verbs:
-      - update
-  - apiGroups:
-      - certificates.k8s.io
-    resources:
-      - signers
-    verbs:
-      - approve
-  - apiGroups:
-      - certificates.k8s.io
-    resources:
-      - signers
-    verbs:
-      - sign
-  - apiGroups:
-      - autoscaling.k8s.io
-    resources:
-      - verticalpodautoscalers
-    verbs:
-      - '*'
-  - apiGroups:
-      - admissionregistration.k8s.io
-    resources:
-      - validatingadmissionpolicies
-      - validatingadmissionpolicybindings
-    verbs:
-      - '*'
+- apiGroups:
+  - hypershift.openshift.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - certificates.hypershift.openshift.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - scheduling.hypershift.openshift.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - auditlogpersistence.hypershift.openshift.io
+  resources:
+  - '*'
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - config.openshift.io
+  resources:
+  - '*'
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - '*'
+- apiGroups:
+  - batch
+  resources:
+  - cronjobs
+  - jobs
+  verbs:
+  - '*'
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - '*'
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  verbs:
+  - '*'
+- apiGroups:
+  - bootstrap.cluster.x-k8s.io
+  - controlplane.cluster.x-k8s.io
+  - infrastructure.cluster.x-k8s.io
+  - machines.cluster.x-k8s.io
+  - exp.infrastructure.cluster.x-k8s.io
+  - addons.cluster.x-k8s.io
+  - exp.cluster.x-k8s.io
+  - cluster.x-k8s.io
+  - monitoring.coreos.com
+  - monitoring.rhobs
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - policy
+  resources:
+  - poddisruptionbudgets
+  verbs:
+  - '*'
+- apiGroups:
+  - operator.openshift.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - route.openshift.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - image.openshift.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - security.openshift.io
+  resources:
+  - securitycontextconstraints
+  verbs:
+  - '*'
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - '*'
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+  - deletecollection
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - configmaps
+  - configmaps/finalizers
+  - persistentvolumeclaims
+  - pods
+  - pods/log
+  - secrets
+  - nodes
+  - namespaces
+  - serviceaccounts
+  - services
+  - endpoints
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumes
+  verbs:
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs:
+  - '*'
+- apiGroups:
+  - etcd.database.coreos.com
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - machine.openshift.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - monitoring.coreos.com
+  - monitoring.rhobs
+  resources:
+  - podmonitors
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+- apiGroups:
+  - capi-provider.agent-install.openshift.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - operator.openshift.io
+  resources:
+  - ingresscontrollers
+  verbs:
+  - '*'
+- apiGroups:
+  - kubevirt.io
+  resources:
+  - virtualmachineinstances
+  - virtualmachines
+  - virtualmachines/finalizers
+  verbs:
+  - '*'
+- apiGroups:
+  - cdi.kubevirt.io
+  resources:
+  - datavolumes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ipam.cluster.x-k8s.io
+  resources:
+  - ipaddressclaims
+  - ipaddressclaims/status
+  verbs:
+  - '*'
+- apiGroups:
+  - ipam.cluster.x-k8s.io
+  resources:
+  - ipaddresses
+  - ipaddresses/status
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - openstack.k-orc.cloud
+  resources:
+  - images
+  - images/status
+  verbs:
+  - '*'
+- apiGroups:
+  - subresources.kubevirt.io
+  resources:
+  - virtualmachineinstances/addvolume
+  - virtualmachineinstances/removevolume
+  - virtualmachines/addvolume
+  - virtualmachines/removevolume
+  verbs:
+  - update
+- apiGroups:
+  - cdi.kubevirt.io
+  resources:
+  - datavolumes
+  verbs:
+  - '*'
+- apiGroups:
+  - agent-install.openshift.io
+  resources:
+  - agents
+  verbs:
+  - '*'
+- apiGroups:
+  - snapshot.storage.k8s.io
+  resources:
+  - volumesnapshots
+  verbs:
+  - get
+  - create
+  - delete
+- apiGroups:
+  - extensions.hive.openshift.io
+  resources:
+  - agentclusterinstalls
+  verbs:
+  - '*'
+- apiGroups:
+  - hive.openshift.io
+  resources:
+  - clusterdeployments
+  verbs:
+  - '*'
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  - endpointslices/restricted
+  verbs:
+  - '*'
+- apiGroups:
+  - admissionregistration.k8s.io
+  resourceNames:
+  - hypershift.openshift.io
+  resources:
+  - validatingwebhookconfigurations
+  verbs:
+  - delete
+- apiGroups:
+  - certificates.k8s.io
+  resources:
+  - certificatesigningrequests
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - certificates.k8s.io
+  resources:
+  - certificatesigningrequests/status
+  verbs:
+  - patch
+- apiGroups:
+  - certificates.k8s.io
+  resources:
+  - certificatesigningrequests/approval
+  verbs:
+  - update
+- apiGroups:
+  - certificates.k8s.io
+  resources:
+  - signers
+  verbs:
+  - approve
+- apiGroups:
+  - certificates.k8s.io
+  resources:
+  - signers
+  verbs:
+  - sign
+- apiGroups:
+  - autoscaling.k8s.io
+  resources:
+  - verticalpodautoscalers
+  verbs:
+  - '*'
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - validatingadmissionpolicies
+  - validatingadmissionpolicybindings
+  verbs:
+  - '*'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: hypershift-operator
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: hypershift-operator
 subjects:
-  - kind: ServiceAccount
-    name: operator
-    namespace: hypershift
+- kind: ServiceAccount
+  name: operator
+  namespace: hypershift
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: hypershift-operator
   namespace: hypershift
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 rules:
-  - apiGroups:
-      - coordination.k8s.io
-    resources:
-      - leases
-    verbs:
-      - '*'
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - '*'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: hypershift-operator
   namespace: hypershift
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: hypershift-operator
 subjects:
-  - kind: ServiceAccount
-    name: operator
-    namespace: hypershift
+- kind: ServiceAccount
+  name: operator
+  namespace: hypershift
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: hypershift:extension-apiserver-authentication-reader
   namespace: kube-system
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: extension-apiserver-authentication-reader
 subjects:
-  - apiGroup: rbac.authorization.k8s.io
-    kind: Group
-    name: system:serviceaccounts
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:serviceaccounts
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -460,15 +440,13 @@ metadata:
     config.openshift.io/inject-trusted-cabundle: "true"
   name: openshift-config-managed-trusted-ca-bundle
   namespace: hypershift
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    hypershift.openshift.io/install-cli-version: 'openshift/hypershift: 37a7afe08caced7766b39687d2ea2c1d4a8c50b6. Latest supported OCP: 4.22.0'
-    argocd.argoproj.io/sync-wave: "1"
+    hypershift.openshift.io/install-cli-version: 'openshift/hypershift: bb80982659aa98a8feb1422a859224794ff0bf9d.
+      Latest supported OCP: 4.22.0'
   name: operator
   namespace: hypershift
 spec:
@@ -487,133 +465,131 @@ spec:
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                labelSelector:
-                  matchExpressions:
-                    - key: name
-                      operator: In
-                      values:
-                        - operator
-                topologyKey: kubernetes.io/hostname
-              weight: 10
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: name
+                  operator: In
+                  values:
+                  - operator
+              topologyKey: kubernetes.io/hostname
+            weight: 10
       containers:
-        - args:
-            - run
-            - --namespace=$(MY_NAMESPACE)
-            - --pod-name=$(MY_NAME)
-            - --metrics-addr=:9000
-            - --enable-dedicated-request-serving-isolation=true
-            - --enable-ocp-cluster-monitoring=false
-            - --enable-ci-debug-output=false
-            - --private-platform=None
-            - --cert-dir=/var/run/secrets/serving-cert
-          command:
-            - /usr/bin/hypershift-operator
-          env:
-            - name: MY_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: MY_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: METRICS_SET
-              value: Telemetry
-            - name: CERT_ROTATION_SCALE
-              value: 24h0m0s
-            - name: ENABLE_ETCD_RECOVERY
-              value: "1"
-            - name: PLATFORMS_INSTALLED
-              value: KubeVirt
-            - name: IMAGE_KUBEVIRT_CAPI_PROVIDER
-              value: quay.io/capk/capk-manager:v0.11.1
-          image: registry.redhat.io/multicluster-engine/hypershift-rhel9-operator:v2.8
-          imagePullPolicy: IfNotPresent
-          livenessProbe:
-            failureThreshold: 5
-            httpGet:
-              path: /metrics
-              port: 9000
-              scheme: HTTP
-            initialDelaySeconds: 60
-            periodSeconds: 60
-            successThreshold: 1
-            timeoutSeconds: 5
-          name: operator
-          ports:
-            - containerPort: 9000
-              name: metrics
-              protocol: TCP
-            - containerPort: 9443
-              name: manager
-              protocol: TCP
-          readinessProbe:
-            failureThreshold: 3
-            httpGet:
-              path: /metrics
-              port: 9000
-              scheme: HTTP
-            initialDelaySeconds: 15
-            periodSeconds: 60
-            successThreshold: 1
-            timeoutSeconds: 5
-          resources:
-            requests:
-              cpu: 10m
-              memory: 150Mi
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            privileged: false
-            readOnlyRootFilesystem: true
-            runAsUser: 1000
-            seccompProfile:
-              type: RuntimeDefault
-          terminationMessagePolicy: FallbackToLogsOnError
-          volumeMounts:
-            - mountPath: /var/run/secrets/serving-cert
-              name: serving-cert
-            - mountPath: /etc/pki/ca-trust/extracted/pem
-              name: trusted-ca-bundle
-              readOnly: true
+      - args:
+        - run
+        - --namespace=$(MY_NAMESPACE)
+        - --pod-name=$(MY_NAME)
+        - --metrics-addr=:9000
+        - --enable-dedicated-request-serving-isolation=true
+        - --enable-ocp-cluster-monitoring=false
+        - --enable-ci-debug-output=false
+        - --private-platform=None
+        - --cert-dir=/var/run/secrets/serving-cert
+        command:
+        - /usr/bin/hypershift-operator
+        env:
+        - name: MY_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: MY_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: METRICS_SET
+          value: Telemetry
+        - name: CERT_ROTATION_SCALE
+          value: 24h0m0s
+        - name: ENABLE_ETCD_RECOVERY
+          value: "1"
+        - name: PLATFORMS_INSTALLED
+          value: KubeVirt
+        image: quay.io/klape/hypershift:arm64-kubevirt-dns-fix
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /metrics
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 60
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: operator
+        ports:
+        - containerPort: 9000
+          name: metrics
+          protocol: TCP
+        - containerPort: 9443
+          name: manager
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /metrics
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 60
+          successThreshold: 1
+          timeoutSeconds: 5
+        resources:
+          requests:
+            cpu: 10m
+            memory: 150Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsUser: 1000
+          seccompProfile:
+            type: RuntimeDefault
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - mountPath: /var/run/secrets/serving-cert
+          name: serving-cert
+        - mountPath: /etc/pki/ca-trust/extracted/pem
+          name: trusted-ca-bundle
+          readOnly: true
       initContainers:
-        - args:
-            - init
-          command:
-            - /usr/bin/hypershift-operator
-          image: registry.redhat.io/multicluster-engine/hypershift-rhel9-operator:v2.8
-          imagePullPolicy: IfNotPresent
-          name: init-environment
-          resources: {}
-          securityContext:
-            privileged: false
-            readOnlyRootFilesystem: true
-            runAsUser: 1000
-          terminationMessagePolicy: FallbackToLogsOnError
-          volumeMounts:
-            - mountPath: /var/run/ca-trust
-              name: openshift-config-managed-trusted-ca-bundle
-              readOnly: true
-            - mountPath: /trust-bundle
-              name: trusted-ca-bundle
+      - args:
+        - init
+        command:
+        - /usr/bin/hypershift-operator
+        image: quay.io/klape/hypershift:arm64-kubevirt-dns-fix
+        imagePullPolicy: IfNotPresent
+        name: init-environment
+        resources: {}
+        securityContext:
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsUser: 1000
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - mountPath: /var/run/ca-trust
+          name: openshift-config-managed-trusted-ca-bundle
+          readOnly: true
+        - mountPath: /trust-bundle
+          name: trusted-ca-bundle
       priorityClassName: hypershift-operator
       serviceAccountName: operator
       volumes:
-        - name: serving-cert
-          secret:
-            secretName: manager-serving-cert
-        - configMap:
-            items:
-              - key: ca-bundle.crt
-                path: tls-ca-bundle.pem
-            name: openshift-config-managed-trusted-ca-bundle
-            optional: true
+      - name: serving-cert
+        secret:
+          secretName: manager-serving-cert
+      - configMap:
+          items:
+          - key: ca-bundle.crt
+            path: tls-ca-bundle.pem
           name: openshift-config-managed-trusted-ca-bundle
-        - emptyDir: {}
-          name: trusted-ca-bundle
+          optional: true
+        name: openshift-config-managed-trusted-ca-bundle
+      - emptyDir: {}
+        name: trusted-ca-bundle
 status: {}
 ---
 apiVersion: v1
@@ -621,21 +597,20 @@ kind: Service
 metadata:
   annotations:
     service.beta.openshift.io/serving-cert-secret-name: manager-serving-cert
-    argocd.argoproj.io/sync-wave: "1"
   labels:
     name: operator
   name: operator
   namespace: hypershift
 spec:
   ports:
-    - name: metrics
-      port: 9393
-      protocol: TCP
-      targetPort: metrics
-    - name: manager
-      port: 443
-      protocol: TCP
-      targetPort: manager
+  - name: metrics
+    port: 9393
+    protocol: TCP
+    targetPort: metrics
+  - name: manager
+    port: 443
+    protocol: TCP
+    targetPort: manager
   selector:
     name: operator
   type: ClusterIP
@@ -649,55 +624,47 @@ kind: ConfigMap
 metadata:
   name: feature-gate
   namespace: hypershift
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: prometheus
   namespace: hypershift
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 rules:
-  - apiGroups:
-      - ""
-    resources:
-      - services
-      - endpoints
-      - pods
-    verbs:
-      - get
-      - list
-      - watch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  - endpoints
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: prometheus
   namespace: hypershift
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: prometheus
 subjects:
-  - kind: ServiceAccount
-    name: prometheus-k8s
-    namespace: openshift-monitoring
+- kind: ServiceAccount
+  name: prometheus-k8s
+  namespace: openshift-monitoring
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: operator
   namespace: hypershift
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 spec:
   endpoints:
-    - interval: 30s
-      port: metrics
+  - interval: 30s
+    port: metrics
   jobLabel: component
   namespaceSelector: {}
   selector:
@@ -709,42 +676,60 @@ kind: PrometheusRule
 metadata:
   name: metrics
   namespace: hypershift
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 spec:
   groups:
-    - interval: 30s
-      name: hypershift.rules
-      rules:
-        - expr: sum by (namespace) (rate(apiserver_request_total{verb=~"LIST|GET|WATCH"}[2m]))
-          record: hypershift:apiserver_request_total:read
-        - expr: sum by (namespace) (rate(apiserver_request_total{verb=~"POST|PUT|PATCH|UPDATE|DELETE|APPLY"}[2m]))
-          record: hypershift:apiserver_request_total:write
-        - expr: sum by (namespace, system_client) (rate(apiserver_request_total{}[2m]))
-          record: hypershift:apiserver_request_total:client
-        - expr: sort_desc(sum(rate(apiserver_request_aborts_total[1m])) by (resource, verb))
-          record: hypershift:apiserver_request_aborts_total
-        - expr: sum by (app, namespace, code, method, pod) ( sum(rest_client_requests_total) by (pod, namespace, code, method) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_control_plane_component!=""}, "app", "$1", "label_app", "(.*)") )
-          record: hypershift:controlplane:component_api_requests_total
-        - expr: sum by (app, namespace, pod) ( sum(container_memory_usage_bytes{container!="POD",container!=""}) by (pod, namespace) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_control_plane_component!=""}, "app", "$1", "label_app", "(.*)") )
-          record: hypershift:controlplane:component_memory_usage
-        - expr: sum by (app, namespace, pod) ( sum(container_memory_rss{container!="POD",container!=""}) by (pod, namespace) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_control_plane_component!=""}, "app", "$1", "label_app", "(.*)") )
-          record: hypershift:controlplane:component_memory_rss
-        - expr: sum by (app, namespace, pod) ( sum(kube_pod_container_resource_requests{resource="memory"}) by (pod, namespace) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_control_plane_component!=""}, "app", "$1", "label_app", "(.*)") )
-          record: hypershift:controlplane:component_memory_request
-        - expr: histogram_quantile(0.9, sum by (namespace, le) (rate(ign_server_payload_generation_seconds_bucket{container="ignition-server"}[3m])))
-          record: hypershift:controlplane:ign_payload_generation_seconds_p90
-        - expr: avg by (app, namespace, pod) ( sum( rate( container_cpu_usage_seconds_total{container_name!="POD",container!=""}[2m] ) ) by (pod, namespace) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_control_plane_component!=""}, "app", "$1", "label_app", "(.*)") ) / count by (app, namespace, pod) ( sum( rate( container_cpu_usage_seconds_total{container_name!="POD",container!=""}[2m] ) ) by (pod, namespace) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_control_plane_component!=""}, "app", "$1", "label_app", "(.*)") )
-          record: hypershift:controlplane:component_cpu_usage_seconds
-        - expr: sum by (app, namespace, pod) ( sum(kube_pod_container_resource_requests{resource="cpu"}) by (pod, namespace) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_control_plane_component!=""}, "app", "$1", "label_app", "(.*)") )
-          record: hypershift:controlplane:component_cpu_request
-        - expr: sum by (app, namespace, code, method) ( sum(rest_client_requests_total) by (pod, namespace, code, method) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_operator_component!=""}, "app", "$1", "label_app", "(.*)") )
-          record: hypershift:operator:component_api_requests_total
-        - expr: max by(platform) (hypershift_hostedclusters)
-          record: platform:hypershift_hostedclusters:max
-        - expr: max by(platform) (hypershift_nodepools)
-          record: platform:hypershift_nodepools:max
-        - expr: sum by(cluster_name, exported_namespace) (max by(name, exported_namespace, platform, cluster_name) (hypershift_nodepools_size))
-          record: cluster_name:hypershift_nodepools_size:sum
-        - expr: sum by(cluster_name, exported_namespace) (max by(name, exported_namespace, platform, cluster_name) (hypershift_nodepools_available_replicas))
-          record: cluster_name:hypershift_nodepools_available_replicas:sum
+  - interval: 30s
+    name: hypershift.rules
+    rules:
+    - expr: sum by (namespace) (rate(apiserver_request_total{verb=~"LIST|GET|WATCH"}[2m]))
+      record: hypershift:apiserver_request_total:read
+    - expr: sum by (namespace) (rate(apiserver_request_total{verb=~"POST|PUT|PATCH|UPDATE|DELETE|APPLY"}[2m]))
+      record: hypershift:apiserver_request_total:write
+    - expr: sum by (namespace, system_client) (rate(apiserver_request_total{}[2m]))
+      record: hypershift:apiserver_request_total:client
+    - expr: sort_desc(sum(rate(apiserver_request_aborts_total[1m])) by (resource,
+        verb))
+      record: hypershift:apiserver_request_aborts_total
+    - expr: sum by (app, namespace, code, method, pod) ( sum(rest_client_requests_total)
+        by (pod, namespace, code, method) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_control_plane_component!=""},
+        "app", "$1", "label_app", "(.*)") )
+      record: hypershift:controlplane:component_api_requests_total
+    - expr: sum by (app, namespace, pod) ( sum(container_memory_usage_bytes{container!="POD",container!=""})
+        by (pod, namespace) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_control_plane_component!=""},
+        "app", "$1", "label_app", "(.*)") )
+      record: hypershift:controlplane:component_memory_usage
+    - expr: sum by (app, namespace, pod) ( sum(container_memory_rss{container!="POD",container!=""})
+        by (pod, namespace) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_control_plane_component!=""},
+        "app", "$1", "label_app", "(.*)") )
+      record: hypershift:controlplane:component_memory_rss
+    - expr: sum by (app, namespace, pod) ( sum(kube_pod_container_resource_requests{resource="memory"})
+        by (pod, namespace) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_control_plane_component!=""},
+        "app", "$1", "label_app", "(.*)") )
+      record: hypershift:controlplane:component_memory_request
+    - expr: histogram_quantile(0.9, sum by (namespace, le) (rate(ign_server_payload_generation_seconds_bucket{container="ignition-server"}[3m])))
+      record: hypershift:controlplane:ign_payload_generation_seconds_p90
+    - expr: avg by (app, namespace, pod) ( sum( rate( container_cpu_usage_seconds_total{container_name!="POD",container!=""}[2m]
+        ) ) by (pod, namespace) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_control_plane_component!=""},
+        "app", "$1", "label_app", "(.*)") ) / count by (app, namespace, pod) ( sum(
+        rate( container_cpu_usage_seconds_total{container_name!="POD",container!=""}[2m]
+        ) ) by (pod, namespace) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_control_plane_component!=""},
+        "app", "$1", "label_app", "(.*)") )
+      record: hypershift:controlplane:component_cpu_usage_seconds
+    - expr: sum by (app, namespace, pod) ( sum(kube_pod_container_resource_requests{resource="cpu"})
+        by (pod, namespace) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_control_plane_component!=""},
+        "app", "$1", "label_app", "(.*)") )
+      record: hypershift:controlplane:component_cpu_request
+    - expr: sum by (app, namespace, code, method) ( sum(rest_client_requests_total)
+        by (pod, namespace, code, method) * on (pod, namespace) group_left(app) label_replace(kube_pod_labels{label_hypershift_openshift_io_operator_component!=""},
+        "app", "$1", "label_app", "(.*)") )
+      record: hypershift:operator:component_api_requests_total
+    - expr: max by(platform) (hypershift_hostedclusters)
+      record: platform:hypershift_hostedclusters:max
+    - expr: max by(platform) (hypershift_nodepools)
+      record: platform:hypershift_nodepools:max
+    - expr: sum by(cluster_name, exported_namespace) (max by(name, exported_namespace,
+        platform, cluster_name) (hypershift_nodepools_size))
+      record: cluster_name:hypershift_nodepools_size:sum
+    - expr: sum by(cluster_name, exported_namespace) (max by(name, exported_namespace,
+        platform, cluster_name) (hypershift_nodepools_available_replicas))
+      record: cluster_name:hypershift_nodepools_available_replicas:sum
