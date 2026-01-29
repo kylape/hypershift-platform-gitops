@@ -575,6 +575,8 @@ spec:
           readOnly: true
         - mountPath: /trust-bundle
           name: trusted-ca-bundle
+      nodeSelector:
+        kubernetes.io/arch: arm64
       priorityClassName: hypershift-operator
       serviceAccountName: operator
       volumes:
