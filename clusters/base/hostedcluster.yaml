@@ -5,6 +5,8 @@ metadata:
   namespace: clusters
 spec:
   controllerAvailabilityPolicy: SingleReplica
+  nodeSelector:
+    kubernetes.io/arch: amd64
   release:
     image: quay.io/openshift-release-dev/ocp-release:4.18.30-multi
   pullSecret:
