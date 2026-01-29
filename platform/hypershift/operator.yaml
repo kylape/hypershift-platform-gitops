@@ -504,9 +504,7 @@ spec:
           value: "1"
         - name: PLATFORMS_INSTALLED
           value: KubeVirt
-        - name: IMAGE_KUBEVIRT_CAPI_PROVIDER
-          value: quay.io/capk/capk-manager:v0.11.1
-        image: quay.io/klape/hypershift:arm64-kubevirt-dns-fix
+        image: quay.io/hypershift/hypershift-operator:latest
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
@@ -562,7 +560,7 @@ spec:
         - init
         command:
         - /usr/bin/hypershift-operator
-        image: quay.io/klape/hypershift:arm64-kubevirt-dns-fix
+        image: quay.io/hypershift/hypershift-operator:latest
         imagePullPolicy: IfNotPresent
         name: init-environment
         resources: {}
@@ -578,7 +576,7 @@ spec:
         - mountPath: /trust-bundle
           name: trusted-ca-bundle
       nodeSelector:
-        kubernetes.io/arch: arm64
+        kubernetes.io/arch: amd64
       priorityClassName: hypershift-operator
       serviceAccountName: operator
       volumes:
