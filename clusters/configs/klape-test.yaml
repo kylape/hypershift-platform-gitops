@@ -1,8 +1,0 @@
-# Cluster configuration for poc-cluster
-name: klape-test
-arch: amd64
-replicas: 2
-cores: 8
-memory: 32Gi
-storageSize: 100Gi
-storageClass: gp3-csi
