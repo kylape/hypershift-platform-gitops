@@ -4,12 +4,11 @@ metadata:
   name: poc-cluster-workers
   namespace: clusters
   annotations:
-    # Configure x86_64 VMs: q35 machine type, SecureBoot and SMM for UEFI boot
+    # Configure EFI boot without SecureBoot for mixed-arch cluster compatibility
     hypershift.openshift.io/kubevirt-vm-jsonpatch: |
       [
-        {"op": "add", "path": "/spec/template/spec/domain/machine", "value": {"type": "q35"}},
-        {"op": "add", "path": "/spec/template/spec/domain/firmware", "value": {"bootloader": {"efi": {"secureBoot": true}}}},
-        {"op": "add", "path": "/spec/template/spec/domain/features", "value": {"smm": {"enabled": true}}}
+        {"op": "add", "path": "/spec/template/spec/domain/firmware", "value": {"bootloader": {"efi": {"secureBoot": false}}}},
+        {"op": "add", "path": "/spec/template/spec/domain/features", "value": {"smm": {"enabled": false}}}
       ]
 spec:
   clusterName: poc-cluster
