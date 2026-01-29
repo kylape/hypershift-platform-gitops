@@ -2,17 +2,16 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: hypershift-operator
+  name: mce
   namespace: openshift-gitops
   annotations:
-    # Sync-waves within manifests: CRDs=0, operator=1
     argocd.argoproj.io/sync-wave: "1"
 spec:
   project: hypershift-platform
   source:
     repoURL: https://github.com/kylape/hypershift-platform-gitops.git
     targetRevision: main
-    path: platform/hypershift
+    path: platform/mce
   destination:
     server: https://kubernetes.default.svc
   syncPolicy:
