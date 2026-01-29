@@ -1,0 +1,26 @@
+---
+# ArgoCD Application: Shared Services on Management Cluster
+# Deploys Pyroscope and other shared services to the management cluster
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: shared-services
+  namespace: openshift-gitops
+  annotations:
+    # Deploy after LVMS (sync-wave 1) so PVCs can use storage classes
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: hypershift-platform
+  source:
+    repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+    targetRevision: main
+    path: platform/shared-services
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: shared-services
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

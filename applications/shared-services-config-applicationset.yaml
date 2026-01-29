@@ -1,0 +1,67 @@
+---
+# ArgoCD ApplicationSet: Deploy shared services config to all hosted clusters
+#
+# This ApplicationSet uses the Cluster Generator to automatically deploy
+# the shared-services-config to every cluster registered with ArgoCD.
+#
+# Prerequisites:
+# 1. Hosted clusters must be registered with ArgoCD (via Secrets or cluster registration)
+# 2. The management cluster domain must be configured in the generator
+#
+# For manual deployment per cluster, use individual Application resources instead
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: shared-services-config
+  namespace: openshift-gitops
+spec:
+  generators:
+    # Cluster generator - creates an Application for each cluster
+    - clusters:
+        # Only target hosted clusters, not the management cluster
+        selector:
+          matchLabels:
+            hypershift.openshift.io/hosted-cluster: "true"
+        # Values available in templates
+        values:
+          # The management cluster's apps domain
+          # Update this to match your actual management cluster domain
+          mgmtDomain: "apps.mgmt.hypershift-platform.example.com"
+
+  template:
+    metadata:
+      name: 'shared-services-config-{{name}}'
+      namespace: openshift-gitops
+    spec:
+      project: hypershift-platform
+      source:
+        repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+        targetRevision: main
+        path: shared-services-config
+        # Use Kustomize with inline patches for domain substitution
+        kustomize:
+          patches:
+            - target:
+                kind: ConfigMap
+                name: shared-services-endpoints
+              patch: |-
+                - op: replace
+                  path: /data/PYROSCOPE_SERVER_ADDRESS
+                  value: "https://pyroscope-shared-services.{{values.mgmtDomain}}"
+            - target:
+                kind: Service
+                name: pyroscope
+              patch: |-
+                - op: replace
+                  path: /spec/externalName
+                  value: "pyroscope-shared-services.{{values.mgmtDomain}}"
+      destination:
+        # Deploy to the hosted cluster
+        server: '{{server}}'
+        namespace: shared-services
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

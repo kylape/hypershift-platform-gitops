@@ -1,0 +1,76 @@
+---
+# Pyroscope - Continuous Profiling Platform
+# Single binary mode deployment for initial rollout
+# Upgrade to microservices mode when scaling beyond 10 hosted clusters
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pyroscope
+  namespace: shared-services
+  labels:
+    app.kubernetes.io/name: pyroscope
+    app.kubernetes.io/component: server
+    app.kubernetes.io/part-of: shared-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pyroscope
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pyroscope
+        app.kubernetes.io/component: server
+    spec:
+      securityContext:
+        fsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+      containers:
+        - name: pyroscope
+          image: grafana/pyroscope:1.10.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - "server"
+            - "-config.file=/etc/pyroscope/config.yaml"
+          ports:
+            - name: http
+              containerPort: 4040
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 45
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/pyroscope
+            - name: data
+              mountPath: /data
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+      volumes:
+        - name: config
+          configMap:
+            name: pyroscope-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: pyroscope-data

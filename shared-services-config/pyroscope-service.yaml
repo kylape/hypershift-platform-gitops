@@ -1,0 +1,27 @@
+---
+# ExternalName service for in-cluster DNS resolution
+# Allows workloads to use: pyroscope.shared-services.svc.cluster.local
+#
+# Note: ExternalName services don't support port remapping
+# The target port must match what the client expects
+#
+# For HTTPS routes (port 443), applications should:
+# 1. Use the full route URL from ConfigMap (recommended)
+# 2. Or use this ExternalName with explicit port 443
+apiVersion: v1
+kind: Service
+metadata:
+  name: pyroscope
+  namespace: shared-services
+  labels:
+    app.kubernetes.io/name: pyroscope
+    app.kubernetes.io/part-of: shared-services
+spec:
+  type: ExternalName
+  # This hostname resolves to the OpenShift Route on the management cluster
+  # Replace CLUSTER_DOMAIN with actual domain during ApplicationSet templating
+  externalName: pyroscope-shared-services.apps.CLUSTER_DOMAIN
+  ports:
+    - name: https
+      port: 443
+      protocol: TCP

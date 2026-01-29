@@ -1,0 +1,33 @@
+---
+# Kustomize base for shared services config
+# Use overlays to substitute CLUSTER_DOMAIN with actual management cluster domain
+#
+# Example overlay (overlays/prod/kustomization.yaml):
+#   resources:
+#     - ../../shared-services-config
+#   patches:
+#     - target:
+#         kind: ConfigMap
+#         name: shared-services-endpoints
+#       patch: |-
+#         - op: replace
+#           path: /data/PYROSCOPE_SERVER_ADDRESS
+#           value: "https://pyroscope-shared-services.apps.mgmt.example.com"
+#     - target:
+#         kind: Service
+#         name: pyroscope
+#       patch: |-
+#         - op: replace
+#           path: /spec/externalName
+#           value: "pyroscope-shared-services.apps.mgmt.example.com"
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - endpoints-configmap.yaml
+  - pyroscope-service.yaml
+
+commonLabels:
+  app.kubernetes.io/managed-by: argocd
+  shared-services.hypershift-platform/version: v1

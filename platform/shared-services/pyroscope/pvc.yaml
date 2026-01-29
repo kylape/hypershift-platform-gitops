@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pyroscope-data
+  namespace: shared-services
+  labels:
+    app.kubernetes.io/name: pyroscope
+    app.kubernetes.io/part-of: shared-services
+spec:
+  accessModes:
+    - ReadWriteOnce
+  # Use EBS for durable storage (survives node failures)
+  # Switch to lvms-nvme for ephemeral/dev deployments
+  storageClassName: gp3-csi
+  resources:
+    requests:
+      storage: 50Gi

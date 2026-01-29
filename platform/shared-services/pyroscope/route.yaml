@@ -1,0 +1,28 @@
+---
+# OpenShift Route for external access
+# Provides TLS termination and DNS discovery
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: pyroscope
+  namespace: shared-services
+  labels:
+    app.kubernetes.io/name: pyroscope
+    app.kubernetes.io/part-of: shared-services
+  annotations:
+    # Enable HTTP/2 for better performance with streaming profiles
+    haproxy.router.openshift.io/enable-http2: "true"
+    # Increase timeout for long-running profile uploads
+    haproxy.router.openshift.io/timeout: 5m
+spec:
+  # Route will be: pyroscope-shared-services.apps.<cluster-domain>
+  to:
+    kind: Service
+    name: pyroscope
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

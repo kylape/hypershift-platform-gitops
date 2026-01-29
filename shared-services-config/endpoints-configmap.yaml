@@ -1,0 +1,31 @@
+---
+# ConfigMap containing all shared service endpoints
+# Applications can reference these via envFrom or individual env vars
+#
+# Usage in Pod spec:
+#   envFrom:
+#     - configMapRef:
+#         name: shared-services-endpoints
+#
+# Or mount as file:
+#   volumes:
+#     - name: endpoints
+#       configMap:
+#         name: shared-services-endpoints
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shared-services-endpoints
+  namespace: shared-services
+  labels:
+    app.kubernetes.io/part-of: shared-services
+data:
+  # Pyroscope - Continuous Profiling
+  # Go SDK: pyroscope.Start(pyroscope.Config{ServerAddress: os.Getenv("PYROSCOPE_SERVER_ADDRESS")})
+  # Java: -Dpyroscope.server.address=${PYROSCOPE_SERVER_ADDRESS}
+  PYROSCOPE_SERVER_ADDRESS: "https://pyroscope-shared-services.apps.CLUSTER_DOMAIN"
+
+  # Placeholder for future services
+  # PROMETHEUS_REMOTE_WRITE_URL: "https://prometheus-shared-services.apps.CLUSTER_DOMAIN/api/v1/write"
+  # JAEGER_ENDPOINT: "https://jaeger-shared-services.apps.CLUSTER_DOMAIN/api/traces"
+  # OTEL_EXPORTER_OTLP_ENDPOINT: "https://otel-shared-services.apps.CLUSTER_DOMAIN"

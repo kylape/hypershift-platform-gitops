@@ -1,0 +1,10 @@
+---
+# This namespace is deployed to hosted clusters via ArgoCD ApplicationSet
+# Contains ExternalName services and ConfigMaps for consuming shared services
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shared-services
+  labels:
+    app.kubernetes.io/part-of: hypershift-platform
+    purpose: shared-services-config
