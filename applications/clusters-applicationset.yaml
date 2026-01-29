@@ -1,0 +1,105 @@
+---
+# ArgoCD ApplicationSet: Deploy HyperShift hosted clusters from config files
+#
+# This ApplicationSet uses the Git file generator to automatically create
+# an Application for each cluster config file in clusters/configs/.
+#
+# To add a new cluster:
+#   1. Create clusters/configs/<cluster-name>.yaml with cluster configuration
+#   2. Commit and push - ArgoCD will automatically create the cluster
+#
+# To remove a cluster:
+#   1. Delete clusters/configs/<cluster-name>.yaml
+#   2. Commit and push - ArgoCD will automatically delete the cluster resources
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: hypershift-clusters
+  namespace: openshift-gitops
+spec:
+  generators:
+    # Git file generator - reads YAML files from clusters/configs/
+    - git:
+        repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+        revision: main
+        files:
+          - path: "clusters/configs/*.yaml"
+
+  template:
+    metadata:
+      name: 'cluster-{{name}}'
+      namespace: openshift-gitops
+      annotations:
+        argocd.argoproj.io/sync-wave: "3"
+    spec:
+      project: hypershift-platform
+      source:
+        repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+        targetRevision: main
+        path: clusters/base
+        kustomize:
+          # Use Kustomize patches to substitute values from config into templates
+          patches:
+            # HostedCluster patches
+            - target:
+                kind: HostedCluster
+                name: CLUSTER_NAME
+              patch: |-
+                - op: replace
+                  path: /metadata/name
+                  value: "{{name}}"
+            # NodePool patches
+            - target:
+                kind: NodePool
+                name: CLUSTER_NAME-workers
+              patch: |-
+                - op: replace
+                  path: /metadata/name
+                  value: "{{name}}-workers"
+                - op: replace
+                  path: /metadata/annotations/hypershift.openshift.io~1kubevirt-vm-jsonpatch
+                  value: |
+                    [
+                      {"op": "add", "path": "/spec/architecture", "value": "{{arch}}"},
+                      {"op": "add", "path": "/spec/template/spec/architecture", "value": "{{arch}}"},
+                      {"op": "add", "path": "/spec/template/spec/domain/machine", "value": {"type": "q35"}},
+                      {"op": "add", "path": "/spec/template/spec/domain/firmware", "value": {"bootloader": {"efi": {"secureBoot": false}}}},
+                      {"op": "add", "path": "/spec/template/spec/domain/features", "value": {"smm": {"enabled": false}}}
+                    ]
+                - op: replace
+                  path: /spec/clusterName
+                  value: "{{name}}"
+                - op: replace
+                  path: /spec/replicas
+                  value: {{replicas}}
+                - op: replace
+                  path: /spec/arch
+                  value: "{{arch}}"
+                - op: replace
+                  path: /spec/platform/kubevirt/compute/cores
+                  value: {{cores}}
+                - op: replace
+                  path: /spec/platform/kubevirt/compute/memory
+                  value: "{{memory}}"
+                - op: replace
+                  path: /spec/platform/kubevirt/rootVolume/persistent/size
+                  value: "{{storageSize}}"
+                - op: replace
+                  path: /spec/platform/kubevirt/rootVolume/persistent/storageClass
+                  value: "{{storageClass}}"
+                - op: replace
+                  path: /spec/platform/kubevirt/nodeSelector
+                  value:
+                    kubernetes.io/arch: "{{arch}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: clusters
+      ignoreDifferences:
+        - group: hypershift.openshift.io
+          kind: HostedCluster
+          jsonPointers:
+            - /spec/platform/kubevirt/generateID
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

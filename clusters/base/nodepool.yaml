@@ -1,20 +1,20 @@
 apiVersion: hypershift.openshift.io/v1beta1
 kind: NodePool
 metadata:
-  name: poc-cluster-workers
+  name: CLUSTER_NAME-workers
   namespace: clusters
   annotations:
-    # Configure x86 VMs for mixed-arch cluster with MultiArchitecture feature gate
+    # Configure VMs for mixed-arch cluster with MultiArchitecture feature gate
     hypershift.openshift.io/kubevirt-vm-jsonpatch: |
       [
-        {"op": "add", "path": "/spec/architecture", "value": "amd64"},
-        {"op": "add", "path": "/spec/template/spec/architecture", "value": "amd64"},
+        {"op": "add", "path": "/spec/architecture", "value": "CLUSTER_ARCH"},
+        {"op": "add", "path": "/spec/template/spec/architecture", "value": "CLUSTER_ARCH"},
         {"op": "add", "path": "/spec/template/spec/domain/machine", "value": {"type": "q35"}},
         {"op": "add", "path": "/spec/template/spec/domain/firmware", "value": {"bootloader": {"efi": {"secureBoot": false}}}},
         {"op": "add", "path": "/spec/template/spec/domain/features", "value": {"smm": {"enabled": false}}}
       ]
 spec:
-  clusterName: poc-cluster
+  clusterName: CLUSTER_NAME
   replicas: 2
   arch: amd64
   management:

@@ -1,0 +1,8 @@
+# Cluster configuration for poc-cluster
+name: poc-cluster
+arch: amd64
+replicas: 2
+cores: 8
+memory: 32Gi
+storageSize: 100Gi
+storageClass: gp3-csi

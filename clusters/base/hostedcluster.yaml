@@ -1,7 +1,7 @@
 apiVersion: hypershift.openshift.io/v1beta1
 kind: HostedCluster
 metadata:
-  name: poc-cluster
+  name: CLUSTER_NAME
   namespace: clusters
 spec:
   controllerAvailabilityPolicy: SingleReplica
