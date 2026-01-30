@@ -8,6 +8,8 @@ metadata:
   annotations:
     # Wait for cert-manager operator to be ready
     argocd.argoproj.io/sync-wave: "1"
+    # Skip dry-run validation - CRD won't exist until operator installs
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
