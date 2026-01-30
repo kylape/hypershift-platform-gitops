@@ -1,0 +1,56 @@
+---
+# External Secrets Operator - deployed via Helm chart
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-secrets-operator
+  namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: hypershift-platform
+  source:
+    repoURL: https://charts.external-secrets.io
+    chart: external-secrets
+    targetRevision: 0.14.3
+    helm:
+      valuesObject:
+        installCRDs: true
+
+        # Use UBI image for OpenShift compatibility
+        image:
+          repository: ghcr.io/external-secrets/external-secrets
+          tag: v0.14.3-ubi
+
+        # Use existing ServiceAccount with IRSA annotation
+        serviceAccount:
+          create: false
+          name: external-secrets
+
+        webhook:
+          serviceAccount:
+            create: true
+            name: external-secrets-webhook
+
+        certController:
+          serviceAccount:
+            create: true
+            name: external-secrets-cert-controller
+
+        # OpenShift security context
+        securityContext:
+          runAsNonRoot: true
+
+        podSecurityContext:
+          runAsNonRoot: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: external-secrets
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+      - ServerSideApply=true
