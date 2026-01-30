@@ -1,0 +1,14 @@
+---
+# Grant privileged SCC to the runner service account for Docker-in-Docker
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: arc-runners-privileged-scc
+subjects:
+  - kind: ServiceAccount
+    name: stackrox-runners-gha-rs-no-permission
+    namespace: arc-runners
+roleRef:
+  kind: ClusterRole
+  name: system:openshift:scc:privileged
+  apiGroup: rbac.authorization.k8s.io
