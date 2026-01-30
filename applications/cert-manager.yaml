@@ -1,0 +1,26 @@
+---
+# ArgoCD Application: cert-manager Operator
+# Provides automatic TLS certificate management via Let's Encrypt
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager
+  namespace: openshift-gitops
+  annotations:
+    # Deploy before stackrox-central (sync-wave 2) so certs are ready
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: hypershift-platform
+  source:
+    repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+    targetRevision: main
+    path: platform/cert-manager
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

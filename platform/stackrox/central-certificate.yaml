@@ -1,0 +1,96 @@
+---
+# Job to create Certificate with dynamic hostname from cluster ingress config
+# This avoids hardcoding the cluster URL in the git repo
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cert-creator
+  namespace: stackrox
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cert-creator
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+rules:
+  - apiGroups: ["config.openshift.io"]
+    resources: ["ingresses"]
+    verbs: ["get"]
+  - apiGroups: ["cert-manager.io"]
+    resources: ["certificates"]
+    verbs: ["get", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-creator
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+subjects:
+  - kind: ServiceAccount
+    name: cert-creator
+    namespace: stackrox
+roleRef:
+  kind: ClusterRole
+  name: cert-creator
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-central-certificate
+  namespace: stackrox
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      serviceAccountName: cert-creator
+      restartPolicy: OnFailure
+      containers:
+        - name: create-cert
+          image: registry.redhat.io/openshift4/ose-cli:latest
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+
+              # Get the cluster's ingress domain
+              INGRESS_DOMAIN=$(oc get ingress.config.openshift.io cluster -o jsonpath='{.spec.domain}')
+              CENTRAL_HOSTNAME="central-stackrox.${INGRESS_DOMAIN}"
+
+              echo "Creating Certificate for hostname: ${CENTRAL_HOSTNAME}"
+
+              # Check if certificate already exists with correct hostname
+              EXISTING=$(oc get certificate central-tls -n stackrox -o jsonpath='{.spec.dnsNames[0]}' 2>/dev/null || echo "")
+              if [ "${EXISTING}" = "${CENTRAL_HOSTNAME}" ]; then
+                echo "Certificate already exists with correct hostname, skipping"
+                exit 0
+              fi
+
+              # Create or update the Certificate
+              cat <<EOF | oc apply -f -
+              apiVersion: cert-manager.io/v1
+              kind: Certificate
+              metadata:
+                name: central-tls
+                namespace: stackrox
+              spec:
+                secretName: central-default-tls-cert
+                issuerRef:
+                  name: letsencrypt-prod
+                  kind: ClusterIssuer
+                dnsNames:
+                  - ${CENTRAL_HOSTNAME}
+                duration: 2160h
+                renewBefore: 360h
+              EOF
+
+              echo "Certificate created successfully"
