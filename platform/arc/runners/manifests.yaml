@@ -185,6 +185,7 @@ spec:
           - dockerd
           - --host=unix:///var/run/docker.sock
           - --group=$(DOCKER_GROUP_GID)
+          - --storage-driver=vfs
         env:
           - name: DOCKER_GROUP_GID
             value: "123"
