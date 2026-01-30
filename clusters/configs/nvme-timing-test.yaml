@@ -1,0 +1,8 @@
+# Cluster configuration for nvme-timing-test
+name: nvme-timing-test
+arch: amd64
+replicas: 1
+cores: 4
+memory: 16Gi
+storageSize: 50Gi
+storageClass: lvms-nvme
