@@ -22,6 +22,9 @@ rules:
   - apiGroups: ["cert-manager.io"]
     resources: ["certificates"]
     verbs: ["get", "create", "update", "patch"]
+  - apiGroups: ["route.openshift.io"]
+    resources: ["routes"]
+    verbs: ["get", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -49,10 +52,11 @@ metadata:
     argocd.argoproj.io/hook-delete-policy: HookSucceeded
 spec:
   ttlSecondsAfterFinished: 300
+  backoffLimit: 1
   template:
     spec:
       serviceAccountName: cert-creator
-      restartPolicy: OnFailure
+      restartPolicy: Never
       containers:
         - name: create-cert
           image: registry.redhat.io/openshift4/ose-cli:latest
@@ -62,20 +66,38 @@ spec:
             - |
               set -e
 
+              # Cleanup function to restore route redirect on exit
+              cleanup() {
+                echo "Restoring Central route redirect policy..."
+                oc patch route central -n stackrox --type=merge \
+                  -p '{"spec":{"tls":{"insecureEdgeTerminationPolicy":"Redirect"}}}' || true
+              }
+              trap cleanup EXIT
+
               # Get the cluster's ingress domain
               INGRESS_DOMAIN=$(oc get ingress.config.openshift.io cluster -o jsonpath='{.spec.domain}')
               CENTRAL_HOSTNAME="central-stackrox.${INGRESS_DOMAIN}"
 
-              echo "Creating Certificate for hostname: ${CENTRAL_HOSTNAME}"
+              echo "Target hostname: ${CENTRAL_HOSTNAME}"
 
-              # Check if certificate already exists with correct hostname
+              # Check if certificate already exists and is valid
               EXISTING=$(oc get certificate central-tls -n stackrox -o jsonpath='{.spec.dnsNames[0]}' 2>/dev/null || echo "")
-              if [ "${EXISTING}" = "${CENTRAL_HOSTNAME}" ]; then
-                echo "Certificate already exists with correct hostname, skipping"
+              READY=$(oc get certificate central-tls -n stackrox -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "")
+
+              if [ "${EXISTING}" = "${CENTRAL_HOSTNAME}" ] && [ "${READY}" = "True" ]; then
+                echo "Certificate already exists and is ready, skipping"
+                trap - EXIT  # Don't run cleanup since we didn't change anything
                 exit 0
               fi
 
+              # Temporarily disable HTTP redirect on Central route
+              # This allows the HTTP-01 ACME challenge to succeed
+              echo "Disabling Central route HTTP redirect for ACME challenge..."
+              oc patch route central -n stackrox --type=merge \
+                -p '{"spec":{"tls":{"insecureEdgeTerminationPolicy":"None"}}}'
+
               # Create or update the Certificate
+              echo "Creating Certificate resource..."
               cat <<EOF | oc apply -f -
               apiVersion: cert-manager.io/v1
               kind: Certificate
@@ -93,4 +115,26 @@ spec:
                 renewBefore: 360h
               EOF
 
-              echo "Certificate created successfully"
+              # Wait for certificate to be ready (up to 5 minutes)
+              echo "Waiting for certificate to be issued..."
+              for i in $(seq 1 60); do
+                READY=$(oc get certificate central-tls -n stackrox -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "")
+                if [ "${READY}" = "True" ]; then
+                  echo "Certificate issued successfully!"
+                  exit 0
+                fi
+
+                # Check for failure
+                REASON=$(oc get certificate central-tls -n stackrox -o jsonpath='{.status.conditions[?(@.type=="Ready")].reason}' 2>/dev/null || echo "")
+                if [ "${REASON}" = "Failed" ]; then
+                  echo "Certificate issuance failed!"
+                  oc get certificate central-tls -n stackrox -o jsonpath='{.status.conditions[?(@.type=="Ready")].message}'
+                  exit 1
+                fi
+
+                echo "  Waiting... (${i}/60) - Status: ${REASON:-Pending}"
+                sleep 5
+              done
+
+              echo "Timeout waiting for certificate"
+              exit 1
