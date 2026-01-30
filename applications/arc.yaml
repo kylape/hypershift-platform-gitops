@@ -1,0 +1,26 @@
+---
+# ArgoCD Application: GitHub Actions Runner Controller (ARC)
+# Deploys self-hosted runners for GitHub Actions workflows
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: arc
+  namespace: openshift-gitops
+  annotations:
+    # Deploy after core infrastructure is ready
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: hypershift-platform
+  source:
+    repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+    targetRevision: main
+    path: platform/arc
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

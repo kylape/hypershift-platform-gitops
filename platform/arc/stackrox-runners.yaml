@@ -1,0 +1,68 @@
+---
+# StackRox Runner Scale Set - self-hosted GitHub Actions runners
+# Configured for kylape/stackrox fork with high-resource runners
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: stackrox-runners
+  namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: hypershift-platform
+  source:
+    repoURL: oci://ghcr.io/actions/actions-runner-controller-charts
+    chart: gha-runner-scale-set
+    targetRevision: 0.9.3
+    helm:
+      valuesObject:
+        # GitHub configuration - points to your fork
+        githubConfigUrl: "https://github.com/kylape/stackrox"
+        githubConfigSecret: github-app-secret
+
+        # Runner scaling configuration
+        minRunners: 1
+        maxRunners: 10
+
+        # Runner group (default is fine for personal repos)
+        runnerGroup: "default"
+
+        # Container mode - Docker-in-Docker for container builds
+        containerMode:
+          type: "dind"
+
+        # Runner pod template with high resources for faster builds
+        template:
+          spec:
+            containers:
+              - name: runner
+                image: ghcr.io/actions/actions-runner:latest
+                command: ["/home/runner/run.sh"]
+                resources:
+                  requests:
+                    cpu: "4"
+                    memory: "16Gi"
+                  limits:
+                    cpu: "8"
+                    memory: "32Gi"
+                volumeMounts:
+                  - name: work
+                    mountPath: /home/runner/_work
+            volumes:
+              - name: work
+                emptyDir:
+                  sizeLimit: 100Gi
+
+            # Tolerate any taints on worker nodes
+            tolerations:
+              - operator: Exists
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: arc-runners
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
