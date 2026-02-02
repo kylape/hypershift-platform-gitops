@@ -66,6 +66,7 @@ spec:
           kind: VirtualMachine
           jqPathExpressions:
             - .metadata.annotations["kubemacpool.io/transaction-timestamp"]
+            - .metadata.generation
           jsonPointers:
             - /spec/preference/kind
             - /spec/preference/revisionName
