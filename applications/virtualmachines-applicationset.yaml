@@ -64,8 +64,9 @@ spec:
       ignoreDifferences:
         - group: kubevirt.io
           kind: VirtualMachine
+          jqPathExpressions:
+            - .metadata.annotations["kubemacpool.io/transaction-timestamp"]
           jsonPointers:
-            - /metadata/annotations/kubemacpool.io~1transaction-timestamp
             - /spec/preference/kind
             - /spec/preference/revisionName
             - /spec/template/spec/architecture
