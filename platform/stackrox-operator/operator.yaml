@@ -4289,33 +4289,13 @@ spec:
         - --metrics-bind-address=0.0.0.0:8443
         - --leader-elect
         env:
-        - name: RELATED_IMAGE_MAIN
-          value: quay.io/stackrox-io/main:4.10.x-831-g626891b076
-        - name: RELATED_IMAGE_SCANNER
-          value: quay.io/stackrox-io/scanner:4.10.x-831-g626891b076
-        - name: RELATED_IMAGE_SCANNER_SLIM
-          value: quay.io/stackrox-io/scanner-slim:4.10.x-831-g626891b076
-        - name: RELATED_IMAGE_SCANNER_DB
-          value: quay.io/stackrox-io/scanner-db:4.10.x-831-g626891b076
-        - name: RELATED_IMAGE_SCANNER_DB_SLIM
-          value: quay.io/stackrox-io/scanner-db-slim:4.10.x-831-g626891b076
-        - name: RELATED_IMAGE_COLLECTOR
-          value: quay.io/stackrox-io/collector:4.10.x-831-g626891b076
-        - name: RELATED_IMAGE_ROXCTL
-          value: quay.io/stackrox-io/roxctl:4.10.x-831-g626891b076
-        - name: RELATED_IMAGE_CENTRAL_DB
-          value: quay.io/stackrox-io/central-db:4.10.x-831-g626891b076
-        - name: RELATED_IMAGE_SCANNER_V4_DB
-          value: quay.io/stackrox-io/scanner-v4-db:4.10.x-831-g626891b076
-        - name: RELATED_IMAGE_SCANNER_V4
-          value: quay.io/stackrox-io/scanner-v4:4.10.x-831-g626891b076
         - name: MEMORY_LIMIT_BYTES
           valueFrom:
             resourceFieldRef:
               containerName: manager
               divisor: '0'
               resource: limits.memory
-        image: quay.io/stackrox-io/stackrox-operator:4.10.0-854-g7c1fb51a41
+        image: quay.io/stackrox-io/stackrox-operator:4.11.0-nightly-20260202
         livenessProbe:
           httpGet:
             path: /healthz
