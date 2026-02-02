@@ -1,0 +1,4 @@
+apiVersion: v2
+name: virtualmachine
+version: 1.0.0
+description: Self-service RHEL virtual machine provisioner

@@ -1,24 +1,22 @@
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: rhel-10-acs-test
+  name: {{ .Values.name }}
 spec:
   dataVolumeTemplates:
     - metadata:
-        name: rhel-10-acs-test
+        name: {{ .Values.name }}
       spec:
         sourceRef:
           kind: DataSource
-          name: rhel10
+          name: rhel{{ .Values.rhelVersion }}
           namespace: openshift-virtualization-os-images
         storage:
           resources:
             requests:
-              storage: '32212254720'
-  instancetype:
-    name: u1.medium
+              storage: {{ .Values.storageSize | default "30Gi" }}
   preference:
-    name: rhel.10
+    name: rhel.{{ .Values.rhelVersion }}
   runStrategy: Always
   template:
     metadata:
@@ -26,6 +24,7 @@ spec:
         network.kubevirt.io/headlessService: headless
     spec:
       domain:
+        {{- if or (eq .Values.rhelVersion "9") (eq .Values.rhelVersion "10") }}
         features:
           smm:
             enabled: false
@@ -33,6 +32,14 @@ spec:
           bootloader:
             efi:
               secureBoot: false
+        {{- end }}
+        resources:
+          requests:
+            cpu: {{ .Values.cores }}
+            memory: {{ .Values.memory }}
+          limits:
+            cpu: {{ .Values.cores }}
+            memory: {{ .Values.memory }}
         devices:
           autoattachPodInterface: false
           autoattachVSOCK: true
@@ -45,7 +52,7 @@ spec:
       subdomain: headless
       volumes:
         - dataVolume:
-            name: rhel-10-acs-test
+            name: {{ .Values.name }}
           name: rootdisk
         - cloudInitNoCloud:
             userData: |
@@ -58,6 +65,8 @@ spec:
                   lock_passwd: false
                   plain_text_passwd: testpass123
                   ssh_authorized_keys:
-                    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDI3MQuBoWRq+Cad6pu/QurHr4jVYGBY+8LHZ43DeiLGYdOPZRqwKqDZrvizRZkAkPV7afsSxuQ6YpcAEP42YioJTHg2zmIAYY8DelKrdUblWL+lm21sBCK5CsGTSKw3FkHqXk+UMENLis9kMy1XGwfYXqbC5BjyQYc762AgIr/6EdlRDTqUuVNeh2N6CupApGOaKwC0KtlonX9MetiHGxiHXKjtY4mOLPhRMCNsNKf+a1Yyi9BbPLYlLxx++Z85owEuJvniszu5rv+tAulvXvj7dbyKjyJQuZtzzvaafZlvvXGSSwBpazwZHkqZpdGUTc5ObKRnTNVDNq4HxpW0OBX klape@klape.remote.csb
+                    {{- range .Values.sshKeys }}
+                    - {{ . }}
+                    {{- end }}
               ssh_pwauth: true
           name: cloudinitdisk

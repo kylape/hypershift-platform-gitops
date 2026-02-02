@@ -1,0 +1,69 @@
+---
+# ArgoCD ApplicationSet: Self-service VM provisioner
+#
+# This ApplicationSet uses the Git file generator to automatically create
+# a VirtualMachine for each config file in virtualmachines/configs/.
+#
+# To create a new VM:
+#   1. Create virtualmachines/configs/<vm-name>.yaml with VM configuration
+#   2. Commit and push - ArgoCD will automatically create the VM
+#
+# To remove a VM:
+#   1. Delete virtualmachines/configs/<vm-name>.yaml
+#   2. Commit and push - ArgoCD will automatically delete the VM
+#
+# Config file format:
+#   name: my-dev-vm
+#   rhelVersion: "9"          # RHEL version: "8", "9", or "10"
+#   arch: arm64               # Architecture: amd64 or arm64
+#   cores: 4                  # Number of CPU cores
+#   memory: 8Gi               # Memory allocation
+#   storageSize: 30Gi         # Disk size (optional, default 30Gi)
+#   sshKeys:
+#     - ssh-rsa AAAA... user1@host
+#     - ssh-ed25519 AAAA... user2@host
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: virtualmachines
+  namespace: openshift-gitops
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+        revision: main
+        files:
+          - path: "virtualmachines/configs/*.yaml"
+
+  template:
+    metadata:
+      name: 'vm-{{.name}}'
+      namespace: openshift-gitops
+      annotations:
+        argocd.argoproj.io/sync-wave: "2"
+    spec:
+      project: hypershift-platform
+      source:
+        repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+        targetRevision: main
+        path: virtualmachines/chart
+        helm:
+          values: |
+            name: "{{.name}}"
+            rhelVersion: "{{.rhelVersion}}"
+            arch: "{{.arch}}"
+            cores: {{.cores}}
+            memory: "{{.memory}}"
+            storageSize: "{{.storageSize}}"
+            sshKeys: {{ .sshKeys | toJson }}
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: virtualmachines
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
