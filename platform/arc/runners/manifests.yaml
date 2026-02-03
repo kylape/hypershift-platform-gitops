@@ -1,5 +1,5 @@
 ---
-# Simple Service Account for DinD runners
+# Simple Service Account for DinD runners (no special permissions needed)
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -33,7 +33,8 @@ spec:
       initContainers:
       - name: init-dind-externals
         image: ghcr.io/actions/actions-runner:latest
-        command: ["cp", "-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
+        command: ["cp"]
+        args: ["-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
         volumeMounts:
           - name: dind-externals
             mountPath: /home/runner/tmpDir
@@ -41,20 +42,25 @@ spec:
       - name: runner
         image: ghcr.io/actions/actions-runner:latest
         command: ["/home/runner/run.sh"]
-        securityContext:
-          runAsUser: 0
         env:
           - name: DOCKER_HOST
             value: unix:///var/run/docker.sock
+          - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
+            value: "120"
         volumeMounts:
           - name: work
             mountPath: /home/runner/_work
           - name: dind-sock
             mountPath: /var/run
-          - name: dind-externals
-            mountPath: /home/runner/externals
       - name: dind
         image: docker:dind
+        args:
+          - dockerd
+          - --host=unix:///var/run/docker.sock
+          - --group=$(DOCKER_GROUP_GID)
+        env:
+          - name: DOCKER_GROUP_GID
+            value: "123"
         securityContext:
           privileged: true
         volumeMounts:
@@ -107,7 +113,8 @@ spec:
       initContainers:
       - name: init-dind-externals
         image: ghcr.io/actions/actions-runner:latest
-        command: ["cp", "-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
+        command: ["cp"]
+        args: ["-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
         volumeMounts:
           - name: dind-externals
             mountPath: /home/runner/tmpDir
@@ -115,20 +122,25 @@ spec:
       - name: runner
         image: ghcr.io/actions/actions-runner:latest
         command: ["/home/runner/run.sh"]
-        securityContext:
-          runAsUser: 0
         env:
           - name: DOCKER_HOST
             value: unix:///var/run/docker.sock
+          - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
+            value: "120"
         volumeMounts:
           - name: work
             mountPath: /home/runner/_work
           - name: dind-sock
             mountPath: /var/run
-          - name: dind-externals
-            mountPath: /home/runner/externals
       - name: dind
         image: docker:dind
+        args:
+          - dockerd
+          - --host=unix:///var/run/docker.sock
+          - --group=$(DOCKER_GROUP_GID)
+        env:
+          - name: DOCKER_GROUP_GID
+            value: "123"
         securityContext:
           privileged: true
         volumeMounts:
