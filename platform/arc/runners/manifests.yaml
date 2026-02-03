@@ -81,7 +81,7 @@ spec:
               - ReadWriteOnce
               resources:
                 requests:
-                  storage: 10Gi
+                  storage: 50Gi
               storageClassName: lvms-nvme
       - name: dind-data
         ephemeral:
@@ -173,7 +173,7 @@ spec:
               - ReadWriteOnce
               resources:
                 requests:
-                  storage: 10Gi
+                  storage: 50Gi
               storageClassName: lvms-nvme
       - name: dind-data
         ephemeral:
