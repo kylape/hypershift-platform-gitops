@@ -147,6 +147,14 @@ spec:
   githubConfigSecret: github-app-secret
   maxRunners: 10
   minRunners: 0
+  containerMode:
+    type: kubernetes
+    kubernetesModeWorkVolumeClaim:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: topolvm-provisioner
+      resources:
+        requests:
+          storage: 10Gi
 
   template:
     spec:
@@ -191,6 +199,14 @@ spec:
   githubConfigSecret: github-app-secret
   maxRunners: 10
   minRunners: 0
+  containerMode:
+    type: kubernetes
+    kubernetesModeWorkVolumeClaim:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: topolvm-provisioner
+      resources:
+        requests:
+          storage: 10Gi
 
   template:
     spec:
