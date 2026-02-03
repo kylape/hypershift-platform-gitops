@@ -153,6 +153,8 @@ spec:
     spec:
       restartPolicy: Never
       serviceAccountName: stackrox-runners-gha-rs-no-permission
+      nodeSelector:
+        kubernetes.io/arch: amd64
       initContainers:
       - name: init-dind-externals
         
