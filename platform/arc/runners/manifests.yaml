@@ -122,7 +122,7 @@ subjects:
   namespace:
     arc-systems
 ---
-# AMD64 Runner Pool
+# AMD64 Runner Pool - No DinD, uses Kubernetes mode for containers
 apiVersion: actions.github.com/v1alpha1
 kind: AutoscalingRunnerSet
 metadata:
@@ -154,57 +154,19 @@ spec:
       serviceAccountName: stackrox-runners-gha-rs-no-permission
       nodeSelector:
         kubernetes.io/arch: amd64
-      initContainers:
-      - name: init-dind-externals
-        image: ghcr.io/actions/actions-runner:latest
-        command: ["cp"]
-        args: ["-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
-        volumeMounts:
-          - name: dind-externals
-            mountPath: /home/runner/tmpDir
       containers:
       - name: runner
         command:
           - /home/runner/run.sh
         image: ghcr.io/actions/actions-runner:latest
-        env:
-          - name: DOCKER_HOST
-            value: unix:///var/run/docker.sock
-          - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
-            value: "120"
         volumeMounts:
           - name: work
             mountPath: /home/runner/_work
-          - name: dind-sock
-            mountPath: /var/run
-      - name: dind
-        image: docker:dind
-        args:
-          - dockerd
-          - --host=unix:///var/run/docker.sock
-          - --group=$(DOCKER_GROUP_GID)
-          - --storage-driver=vfs
-        env:
-          - name: DOCKER_GROUP_GID
-            value: "123"
-        securityContext:
-          privileged: true
-        volumeMounts:
-          - name: work
-            mountPath: /home/runner/_work
-          - name: dind-sock
-            mountPath: /var/run
-          - name: dind-externals
-            mountPath: /home/runner/externals
       volumes:
-      - name: dind-sock
-        emptyDir: {}
-      - name: dind-externals
-        emptyDir: {}
       - name: work
         emptyDir: {}
 ---
-# ARM64 Runner Pool
+# ARM64 Runner Pool - No DinD, uses Kubernetes mode for containers
 apiVersion: actions.github.com/v1alpha1
 kind: AutoscalingRunnerSet
 metadata:
@@ -236,52 +198,14 @@ spec:
       serviceAccountName: stackrox-runners-gha-rs-no-permission
       nodeSelector:
         kubernetes.io/arch: arm64
-      initContainers:
-      - name: init-dind-externals
-        image: ghcr.io/actions/actions-runner:latest
-        command: ["cp"]
-        args: ["-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
-        volumeMounts:
-          - name: dind-externals
-            mountPath: /home/runner/tmpDir
       containers:
       - name: runner
         command:
           - /home/runner/run.sh
         image: ghcr.io/actions/actions-runner:latest
-        env:
-          - name: DOCKER_HOST
-            value: unix:///var/run/docker.sock
-          - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
-            value: "120"
         volumeMounts:
           - name: work
             mountPath: /home/runner/_work
-          - name: dind-sock
-            mountPath: /var/run
-      - name: dind
-        image: docker:dind
-        args:
-          - dockerd
-          - --host=unix:///var/run/docker.sock
-          - --group=$(DOCKER_GROUP_GID)
-          - --storage-driver=vfs
-        env:
-          - name: DOCKER_GROUP_GID
-            value: "123"
-        securityContext:
-          privileged: true
-        volumeMounts:
-          - name: work
-            mountPath: /home/runner/_work
-          - name: dind-sock
-            mountPath: /var/run
-          - name: dind-externals
-            mountPath: /home/runner/externals
       volumes:
-      - name: dind-sock
-        emptyDir: {}
-      - name: dind-externals
-        emptyDir: {}
       - name: work
         emptyDir: {}
