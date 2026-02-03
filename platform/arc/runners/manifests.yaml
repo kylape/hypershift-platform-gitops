@@ -117,29 +117,28 @@ roleRef:
   name: stackrox-runners-gha-rs-manager
 subjects:
 - kind: ServiceAccount
-  name: 
+  name:
     arc-controller-gha-rs-controller
-  namespace: 
+  namespace:
     arc-systems
 ---
-# Source: gha-runner-scale-set/templates/autoscalingrunnerset.yaml
+# AMD64 Runner Pool
 apiVersion: actions.github.com/v1alpha1
 kind: AutoscalingRunnerSet
 metadata:
-  name: stackrox-runners
+  name: stackrox-runners-amd64
   namespace: arc-runners
   labels:
     app.kubernetes.io/component: "autoscaling-runner-set"
     helm.sh/chart: gha-rs-0.9.3
-    app.kubernetes.io/name: stackrox-runners
-    app.kubernetes.io/instance: stackrox-runners
+    app.kubernetes.io/name: stackrox-runners-amd64
+    app.kubernetes.io/instance: stackrox-runners-amd64
     app.kubernetes.io/version: "0.9.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
-    actions.github.com/scale-set-name: stackrox-runners
+    actions.github.com/scale-set-name: stackrox-runners-amd64
     actions.github.com/scale-set-namespace: arc-runners
   annotations:
-    actions.github.com/values-hash: b8e8eda8af6bfa5d0f49d011274d3f49947a7db95093987dc4a16f2230c0f5c
     actions.github.com/cleanup-manager-role-binding: stackrox-runners-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: stackrox-runners-gha-rs-manager
     actions.github.com/cleanup-no-permission-service-account-name: stackrox-runners-gha-rs-no-permission
@@ -157,7 +156,6 @@ spec:
         kubernetes.io/arch: amd64
       initContainers:
       - name: init-dind-externals
-        
         image: ghcr.io/actions/actions-runner:latest
         command: ["cp"]
         args: ["-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
@@ -166,11 +164,9 @@ spec:
             mountPath: /home/runner/tmpDir
       containers:
       - name: runner
-        
-        command: 
+        command:
           - /home/runner/run.sh
-        image: 
-          ghcr.io/actions/actions-runner:latest
+        image: ghcr.io/actions/actions-runner:latest
         env:
           - name: DOCKER_HOST
             value: unix:///var/run/docker.sock
@@ -200,12 +196,92 @@ spec:
             mountPath: /var/run
           - name: dind-externals
             mountPath: /home/runner/externals
-      
       volumes:
       - name: dind-sock
         emptyDir: {}
       - name: dind-externals
         emptyDir: {}
-      
+      - name: work
+        emptyDir: {}
+---
+# ARM64 Runner Pool
+apiVersion: actions.github.com/v1alpha1
+kind: AutoscalingRunnerSet
+metadata:
+  name: stackrox-runners-arm64
+  namespace: arc-runners
+  labels:
+    app.kubernetes.io/component: "autoscaling-runner-set"
+    helm.sh/chart: gha-rs-0.9.3
+    app.kubernetes.io/name: stackrox-runners-arm64
+    app.kubernetes.io/instance: stackrox-runners-arm64
+    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: gha-rs
+    actions.github.com/scale-set-name: stackrox-runners-arm64
+    actions.github.com/scale-set-namespace: arc-runners
+  annotations:
+    actions.github.com/cleanup-manager-role-binding: stackrox-runners-gha-rs-manager
+    actions.github.com/cleanup-manager-role-name: stackrox-runners-gha-rs-manager
+    actions.github.com/cleanup-no-permission-service-account-name: stackrox-runners-gha-rs-no-permission
+spec:
+  githubConfigUrl: https://github.com/kylape/stackrox
+  githubConfigSecret: github-app-secret
+  maxRunners: 10
+  minRunners: 1
+
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: stackrox-runners-gha-rs-no-permission
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      initContainers:
+      - name: init-dind-externals
+        image: ghcr.io/actions/actions-runner:latest
+        command: ["cp"]
+        args: ["-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
+        volumeMounts:
+          - name: dind-externals
+            mountPath: /home/runner/tmpDir
+      containers:
+      - name: runner
+        command:
+          - /home/runner/run.sh
+        image: ghcr.io/actions/actions-runner:latest
+        env:
+          - name: DOCKER_HOST
+            value: unix:///var/run/docker.sock
+          - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
+            value: "120"
+        volumeMounts:
+          - name: work
+            mountPath: /home/runner/_work
+          - name: dind-sock
+            mountPath: /var/run
+      - name: dind
+        image: docker:dind
+        args:
+          - dockerd
+          - --host=unix:///var/run/docker.sock
+          - --group=$(DOCKER_GROUP_GID)
+          - --storage-driver=vfs
+        env:
+          - name: DOCKER_GROUP_GID
+            value: "123"
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - name: work
+            mountPath: /home/runner/_work
+          - name: dind-sock
+            mountPath: /var/run
+          - name: dind-externals
+            mountPath: /home/runner/externals
+      volumes:
+      - name: dind-sock
+        emptyDir: {}
+      - name: dind-externals
+        emptyDir: {}
       - name: work
         emptyDir: {}
