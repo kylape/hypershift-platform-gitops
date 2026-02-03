@@ -1,18 +1,12 @@
 ---
-# Grant privileged SCC to the runner service accounts for container builds
+# Grant privileged SCC to the DinD runner service account
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: arc-runners-privileged-scc
 subjects:
   - kind: ServiceAccount
-    name: stackrox-runners-gha-rs-no-permission
-    namespace: arc-runners
-  - kind: ServiceAccount
-    name: stackrox-runners-amd64-gha-rs-kube-mode
-    namespace: arc-runners
-  - kind: ServiceAccount
-    name: stackrox-runners-arm64-gha-rs-kube-mode
+    name: stackrox-runners-dind
     namespace: arc-runners
 roleRef:
   kind: ClusterRole

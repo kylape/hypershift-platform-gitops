@@ -1,161 +1,12 @@
 ---
-# ConfigMap with pod template for privileged job containers
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: arc-hook-template
-  namespace: arc-runners
-data:
-  template.json: |
-    {
-      "metadata": {
-        "labels": {}
-      },
-      "spec": {
-        "serviceAccountName": "$serviceAccountName",
-        "securityContext": {
-          "runAsUser": 0,
-          "runAsGroup": 0,
-          "fsGroup": 0
-        },
-        "containers": [
-          {
-            "name": "$containerName",
-            "securityContext": {
-              "privileged": true,
-              "runAsUser": 0
-            }
-          }
-        ]
-      }
-    }
----
-# AMD64 Kubernetes Mode Service Account
+# Simple Service Account for DinD runners
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: stackrox-runners-amd64-gha-rs-kube-mode
-  namespace: arc-runners
-  finalizers:
-    - actions.github.com/cleanup-protection
-  labels:
-    helm.sh/chart: gha-rs-0.9.3
-    app.kubernetes.io/name: stackrox-runners-amd64
-    app.kubernetes.io/instance: stackrox-runners-amd64
-    app.kubernetes.io/version: "0.9.3"
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/part-of: gha-rs
-    actions.github.com/scale-set-name: stackrox-runners-amd64
-    actions.github.com/scale-set-namespace: arc-runners
----
-# AMD64 Kubernetes Mode Role - permissions for container hooks
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: stackrox-runners-amd64-gha-rs-kube-mode
-  namespace: arc-runners
-  finalizers:
-    - actions.github.com/cleanup-protection
-rules:
-- apiGroups: [""]
-  resources: ["pods"]
-  verbs: ["get", "list", "create", "delete"]
-- apiGroups: [""]
-  resources: ["pods/exec"]
-  verbs: ["get", "create"]
-- apiGroups: [""]
-  resources: ["pods/log"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["batch"]
-  resources: ["jobs"]
-  verbs: ["get", "list", "create", "delete"]
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["get", "list", "create", "delete"]
----
-# AMD64 Manager Role
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: stackrox-runners-amd64-gha-rs-manager
-  namespace: arc-runners
-  labels:
-    helm.sh/chart: gha-rs-0.9.3
-    app.kubernetes.io/name: stackrox-runners-amd64
-    app.kubernetes.io/instance: stackrox-runners-amd64
-    app.kubernetes.io/version: "0.9.3"
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/part-of: gha-rs
-    actions.github.com/scale-set-name: stackrox-runners-amd64
-    actions.github.com/scale-set-namespace: arc-runners
-    app.kubernetes.io/component: manager-role
-  finalizers:
-    - actions.github.com/cleanup-protection
-rules:
-- apiGroups: [""]
-  resources: ["pods"]
-  verbs: ["create", "delete", "get"]
-- apiGroups: [""]
-  resources: ["pods/status"]
-  verbs: ["get"]
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["create", "delete", "get", "list", "patch", "update"]
-- apiGroups: [""]
-  resources: ["serviceaccounts"]
-  verbs: ["create", "delete", "get", "list", "patch", "update"]
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["rolebindings"]
-  verbs: ["create", "delete", "get", "patch", "update"]
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["roles"]
-  verbs: ["create", "delete", "get", "patch", "update"]
----
-# AMD64 Kubernetes Mode Role Binding
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: stackrox-runners-amd64-gha-rs-kube-mode
-  namespace: arc-runners
-  finalizers:
-    - actions.github.com/cleanup-protection
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: stackrox-runners-amd64-gha-rs-kube-mode
-subjects:
-- kind: ServiceAccount
-  name: stackrox-runners-amd64-gha-rs-kube-mode
+  name: stackrox-runners-dind
   namespace: arc-runners
 ---
-# AMD64 Manager Role Binding
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: stackrox-runners-amd64-gha-rs-manager
-  namespace: arc-runners
-  labels:
-    helm.sh/chart: gha-rs-0.9.3
-    app.kubernetes.io/name: stackrox-runners-amd64
-    app.kubernetes.io/instance: stackrox-runners-amd64
-    app.kubernetes.io/version: "0.9.3"
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/part-of: gha-rs
-    actions.github.com/scale-set-name: stackrox-runners-amd64
-    actions.github.com/scale-set-namespace: arc-runners
-    app.kubernetes.io/component: manager-role-binding
-  finalizers:
-    - actions.github.com/cleanup-protection
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: stackrox-runners-amd64-gha-rs-manager
-subjects:
-- kind: ServiceAccount
-  name: arc-controller-gha-rs-controller
-  namespace: arc-systems
----
-# AMD64 Runner Pool - Kubernetes mode for containers
+# AMD64 Runner Pool - DinD mode
 apiVersion: actions.github.com/v1alpha1
 kind: AutoscalingRunnerSet
 metadata:
@@ -163,20 +14,11 @@ metadata:
   namespace: arc-runners
   labels:
     app.kubernetes.io/component: "autoscaling-runner-set"
-    helm.sh/chart: gha-rs-0.9.3
     app.kubernetes.io/name: stackrox-runners-amd64
-    app.kubernetes.io/instance: stackrox-runners-amd64
-    app.kubernetes.io/version: "0.9.3"
-    app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
+    app.kubernetes.io/version: "0.9.3"
     actions.github.com/scale-set-name: stackrox-runners-amd64
     actions.github.com/scale-set-namespace: arc-runners
-  annotations:
-    actions.github.com/cleanup-manager-role-binding: stackrox-runners-amd64-gha-rs-manager
-    actions.github.com/cleanup-manager-role-name: stackrox-runners-amd64-gha-rs-manager
-    actions.github.com/cleanup-kubernetes-mode-role-binding-name: stackrox-runners-amd64-gha-rs-kube-mode
-    actions.github.com/cleanup-kubernetes-mode-role-name: stackrox-runners-amd64-gha-rs-kube-mode
-    actions.github.com/cleanup-kubernetes-mode-service-account-name: stackrox-runners-amd64-gha-rs-kube-mode
 spec:
   githubConfigUrl: https://github.com/kylape/stackrox
   githubConfigSecret: github-app-secret
@@ -185,31 +27,41 @@ spec:
   template:
     spec:
       restartPolicy: Never
-      serviceAccountName: stackrox-runners-amd64-gha-rs-kube-mode
+      serviceAccountName: stackrox-runners-dind
       nodeSelector:
         kubernetes.io/arch: amd64
+      initContainers:
+      - name: init-dind-externals
+        image: ghcr.io/actions/actions-runner:latest
+        command: ["cp", "-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
+        volumeMounts:
+          - name: dind-externals
+            mountPath: /home/runner/tmpDir
       containers:
       - name: runner
-        command:
-          - /home/runner/run.sh
         image: ghcr.io/actions/actions-runner:latest
+        command: ["/home/runner/run.sh"]
         env:
-          - name: ACTIONS_RUNNER_CONTAINER_HOOKS
-            value: /home/runner/k8s/index.js
-          - name: ACTIONS_RUNNER_POD_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
-          - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
-            value: "true"
-          - name: ACTIONS_RUNNER_CONTAINER_HOOK_TEMPLATE
-            value: /etc/arc-hook-template/template.json
+          - name: DOCKER_HOST
+            value: unix:///var/run/docker.sock
         volumeMounts:
           - name: work
             mountPath: /home/runner/_work
-          - name: hook-template
-            mountPath: /etc/arc-hook-template
-            readOnly: true
+          - name: dind-sock
+            mountPath: /var/run
+          - name: dind-externals
+            mountPath: /home/runner/externals
+      - name: dind
+        image: docker:dind
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - name: work
+            mountPath: /home/runner/_work
+          - name: dind-sock
+            mountPath: /var/run
+          - name: dind-externals
+            mountPath: /home/runner/externals
       volumes:
       - name: work
         ephemeral:
@@ -221,136 +73,12 @@ spec:
                 requests:
                   storage: 10Gi
               storageClassName: lvms-nvme
-      - name: hook-template
-        configMap:
-          name: arc-hook-template
+      - name: dind-sock
+        emptyDir: {}
+      - name: dind-externals
+        emptyDir: {}
 ---
-# ARM64 Kubernetes Mode Service Account
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: stackrox-runners-arm64-gha-rs-kube-mode
-  namespace: arc-runners
-  finalizers:
-    - actions.github.com/cleanup-protection
-  labels:
-    helm.sh/chart: gha-rs-0.9.3
-    app.kubernetes.io/name: stackrox-runners-arm64
-    app.kubernetes.io/instance: stackrox-runners-arm64
-    app.kubernetes.io/version: "0.9.3"
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/part-of: gha-rs
-    actions.github.com/scale-set-name: stackrox-runners-arm64
-    actions.github.com/scale-set-namespace: arc-runners
----
-# ARM64 Kubernetes Mode Role - permissions for container hooks
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: stackrox-runners-arm64-gha-rs-kube-mode
-  namespace: arc-runners
-  finalizers:
-    - actions.github.com/cleanup-protection
-rules:
-- apiGroups: [""]
-  resources: ["pods"]
-  verbs: ["get", "list", "create", "delete"]
-- apiGroups: [""]
-  resources: ["pods/exec"]
-  verbs: ["get", "create"]
-- apiGroups: [""]
-  resources: ["pods/log"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["batch"]
-  resources: ["jobs"]
-  verbs: ["get", "list", "create", "delete"]
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["get", "list", "create", "delete"]
----
-# ARM64 Manager Role
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: stackrox-runners-arm64-gha-rs-manager
-  namespace: arc-runners
-  labels:
-    helm.sh/chart: gha-rs-0.9.3
-    app.kubernetes.io/name: stackrox-runners-arm64
-    app.kubernetes.io/instance: stackrox-runners-arm64
-    app.kubernetes.io/version: "0.9.3"
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/part-of: gha-rs
-    actions.github.com/scale-set-name: stackrox-runners-arm64
-    actions.github.com/scale-set-namespace: arc-runners
-    app.kubernetes.io/component: manager-role
-  finalizers:
-    - actions.github.com/cleanup-protection
-rules:
-- apiGroups: [""]
-  resources: ["pods"]
-  verbs: ["create", "delete", "get"]
-- apiGroups: [""]
-  resources: ["pods/status"]
-  verbs: ["get"]
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["create", "delete", "get", "list", "patch", "update"]
-- apiGroups: [""]
-  resources: ["serviceaccounts"]
-  verbs: ["create", "delete", "get", "list", "patch", "update"]
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["rolebindings"]
-  verbs: ["create", "delete", "get", "patch", "update"]
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["roles"]
-  verbs: ["create", "delete", "get", "patch", "update"]
----
-# ARM64 Kubernetes Mode Role Binding
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: stackrox-runners-arm64-gha-rs-kube-mode
-  namespace: arc-runners
-  finalizers:
-    - actions.github.com/cleanup-protection
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: stackrox-runners-arm64-gha-rs-kube-mode
-subjects:
-- kind: ServiceAccount
-  name: stackrox-runners-arm64-gha-rs-kube-mode
-  namespace: arc-runners
----
-# ARM64 Manager Role Binding
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: stackrox-runners-arm64-gha-rs-manager
-  namespace: arc-runners
-  labels:
-    helm.sh/chart: gha-rs-0.9.3
-    app.kubernetes.io/name: stackrox-runners-arm64
-    app.kubernetes.io/instance: stackrox-runners-arm64
-    app.kubernetes.io/version: "0.9.3"
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/part-of: gha-rs
-    actions.github.com/scale-set-name: stackrox-runners-arm64
-    actions.github.com/scale-set-namespace: arc-runners
-    app.kubernetes.io/component: manager-role-binding
-  finalizers:
-    - actions.github.com/cleanup-protection
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: stackrox-runners-arm64-gha-rs-manager
-subjects:
-- kind: ServiceAccount
-  name: arc-controller-gha-rs-controller
-  namespace: arc-systems
----
-# ARM64 Runner Pool - Kubernetes mode for containers
+# ARM64 Runner Pool - DinD mode
 apiVersion: actions.github.com/v1alpha1
 kind: AutoscalingRunnerSet
 metadata:
@@ -358,20 +86,11 @@ metadata:
   namespace: arc-runners
   labels:
     app.kubernetes.io/component: "autoscaling-runner-set"
-    helm.sh/chart: gha-rs-0.9.3
     app.kubernetes.io/name: stackrox-runners-arm64
-    app.kubernetes.io/instance: stackrox-runners-arm64
-    app.kubernetes.io/version: "0.9.3"
-    app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
+    app.kubernetes.io/version: "0.9.3"
     actions.github.com/scale-set-name: stackrox-runners-arm64
     actions.github.com/scale-set-namespace: arc-runners
-  annotations:
-    actions.github.com/cleanup-manager-role-binding: stackrox-runners-arm64-gha-rs-manager
-    actions.github.com/cleanup-manager-role-name: stackrox-runners-arm64-gha-rs-manager
-    actions.github.com/cleanup-kubernetes-mode-role-binding-name: stackrox-runners-arm64-gha-rs-kube-mode
-    actions.github.com/cleanup-kubernetes-mode-role-name: stackrox-runners-arm64-gha-rs-kube-mode
-    actions.github.com/cleanup-kubernetes-mode-service-account-name: stackrox-runners-arm64-gha-rs-kube-mode
 spec:
   githubConfigUrl: https://github.com/kylape/stackrox
   githubConfigSecret: github-app-secret
@@ -380,31 +99,41 @@ spec:
   template:
     spec:
       restartPolicy: Never
-      serviceAccountName: stackrox-runners-arm64-gha-rs-kube-mode
+      serviceAccountName: stackrox-runners-dind
       nodeSelector:
         kubernetes.io/arch: arm64
+      initContainers:
+      - name: init-dind-externals
+        image: ghcr.io/actions/actions-runner:latest
+        command: ["cp", "-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
+        volumeMounts:
+          - name: dind-externals
+            mountPath: /home/runner/tmpDir
       containers:
       - name: runner
-        command:
-          - /home/runner/run.sh
         image: ghcr.io/actions/actions-runner:latest
+        command: ["/home/runner/run.sh"]
         env:
-          - name: ACTIONS_RUNNER_CONTAINER_HOOKS
-            value: /home/runner/k8s/index.js
-          - name: ACTIONS_RUNNER_POD_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
-          - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
-            value: "true"
-          - name: ACTIONS_RUNNER_CONTAINER_HOOK_TEMPLATE
-            value: /etc/arc-hook-template/template.json
+          - name: DOCKER_HOST
+            value: unix:///var/run/docker.sock
         volumeMounts:
           - name: work
             mountPath: /home/runner/_work
-          - name: hook-template
-            mountPath: /etc/arc-hook-template
-            readOnly: true
+          - name: dind-sock
+            mountPath: /var/run
+          - name: dind-externals
+            mountPath: /home/runner/externals
+      - name: dind
+        image: docker:dind
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - name: work
+            mountPath: /home/runner/_work
+          - name: dind-sock
+            mountPath: /var/run
+          - name: dind-externals
+            mountPath: /home/runner/externals
       volumes:
       - name: work
         ephemeral:
@@ -416,6 +145,7 @@ spec:
                 requests:
                   storage: 10Gi
               storageClassName: lvms-nvme
-      - name: hook-template
-        configMap:
-          name: arc-hook-template
+      - name: dind-sock
+        emptyDir: {}
+      - name: dind-externals
+        emptyDir: {}
