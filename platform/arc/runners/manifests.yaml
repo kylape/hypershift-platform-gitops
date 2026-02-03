@@ -1,4 +1,35 @@
 ---
+# ConfigMap with pod template for privileged job containers
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: arc-hook-template
+  namespace: arc-runners
+data:
+  template.json: |
+    {
+      "metadata": {
+        "labels": {}
+      },
+      "spec": {
+        "serviceAccountName": "$serviceAccountName",
+        "securityContext": {
+          "runAsUser": 0,
+          "runAsGroup": 0,
+          "fsGroup": 0
+        },
+        "containers": [
+          {
+            "name": "$containerName",
+            "securityContext": {
+              "privileged": true,
+              "runAsUser": 0
+            }
+          }
+        ]
+      }
+    }
+---
 # AMD64 Kubernetes Mode Service Account
 apiVersion: v1
 kind: ServiceAccount
@@ -171,9 +202,14 @@ spec:
                 fieldPath: metadata.name
           - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
             value: "true"
+          - name: ACTIONS_RUNNER_CONTAINER_HOOK_TEMPLATE
+            value: /etc/arc-hook-template/template.json
         volumeMounts:
           - name: work
             mountPath: /home/runner/_work
+          - name: hook-template
+            mountPath: /etc/arc-hook-template
+            readOnly: true
       volumes:
       - name: work
         ephemeral:
@@ -185,6 +221,9 @@ spec:
                 requests:
                   storage: 10Gi
               storageClassName: lvms-nvme
+      - name: hook-template
+        configMap:
+          name: arc-hook-template
 ---
 # ARM64 Kubernetes Mode Service Account
 apiVersion: v1
@@ -358,9 +397,14 @@ spec:
                 fieldPath: metadata.name
           - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
             value: "true"
+          - name: ACTIONS_RUNNER_CONTAINER_HOOK_TEMPLATE
+            value: /etc/arc-hook-template/template.json
         volumeMounts:
           - name: work
             mountPath: /home/runner/_work
+          - name: hook-template
+            mountPath: /etc/arc-hook-template
+            readOnly: true
       volumes:
       - name: work
         ephemeral:
@@ -372,3 +416,6 @@ spec:
                 requests:
                   storage: 10Gi
               storageClassName: lvms-nvme
+      - name: hook-template
+        configMap:
+          name: arc-hook-template
