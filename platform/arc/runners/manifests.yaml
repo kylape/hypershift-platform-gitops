@@ -70,6 +70,8 @@ spec:
             mountPath: /var/run
           - name: dind-externals
             mountPath: /home/runner/externals
+          - name: dind-data
+            mountPath: /var/lib/docker
       volumes:
       - name: work
         ephemeral:
@@ -80,6 +82,16 @@ spec:
               resources:
                 requests:
                   storage: 10Gi
+              storageClassName: lvms-nvme
+      - name: dind-data
+        ephemeral:
+          volumeClaimTemplate:
+            spec:
+              accessModes:
+              - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 50Gi
               storageClassName: lvms-nvme
       - name: dind-sock
         emptyDir: {}
@@ -150,6 +162,8 @@ spec:
             mountPath: /var/run
           - name: dind-externals
             mountPath: /home/runner/externals
+          - name: dind-data
+            mountPath: /var/lib/docker
       volumes:
       - name: work
         ephemeral:
@@ -160,6 +174,16 @@ spec:
               resources:
                 requests:
                   storage: 10Gi
+              storageClassName: lvms-nvme
+      - name: dind-data
+        ephemeral:
+          volumeClaimTemplate:
+            spec:
+              accessModes:
+              - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 50Gi
               storageClassName: lvms-nvme
       - name: dind-sock
         emptyDir: {}
