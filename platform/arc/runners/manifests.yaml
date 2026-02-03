@@ -184,7 +184,7 @@ spec:
               resources:
                 requests:
                   storage: 10Gi
-              storageClassName: topolvm-provisioner
+              storageClassName: lvms-nvme
 ---
 # ARM64 Kubernetes Mode Service Account
 apiVersion: v1
@@ -371,4 +371,4 @@ spec:
               resources:
                 requests:
                   storage: 10Gi
-              storageClassName: topolvm-provisioner
+              storageClassName: lvms-nvme
