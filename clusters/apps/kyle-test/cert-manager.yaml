@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kyle-test-cert-manager
+  namespace: openshift-gitops
+spec:
+  project: hypershift-platform
+  source:
+    repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+    targetRevision: main
+    path: platform/apps/cert-manager
+  destination:
+    name: kyle-test
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

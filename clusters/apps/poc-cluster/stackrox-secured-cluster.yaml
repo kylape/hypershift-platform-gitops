@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: poc-cluster-stackrox-secured-cluster
+  namespace: openshift-gitops
+spec:
+  project: hypershift-platform
+  source:
+    repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+    targetRevision: main
+    path: platform/apps/stackrox-secured-cluster
+  destination:
+    name: poc-cluster
+    namespace: stackrox
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

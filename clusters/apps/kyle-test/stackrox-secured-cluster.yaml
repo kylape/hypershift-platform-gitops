@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kyle-test-stackrox-secured-cluster
+  namespace: openshift-gitops
+spec:
+  project: hypershift-platform
+  source:
+    repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+    targetRevision: main
+    path: platform/apps/stackrox-secured-cluster
+  destination:
+    name: kyle-test
+    namespace: stackrox
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
