@@ -1,0 +1,8 @@
+# Cluster configuration for kyle-test
+name: kyle-test
+arch: amd64
+replicas: 2
+cores: 8
+memory: 32Gi
+storageSize: 100Gi
+storageClass: lvms-nvme
