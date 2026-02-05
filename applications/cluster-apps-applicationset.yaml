@@ -1,0 +1,64 @@
+---
+# ArgoCD ApplicationSet: Deploy applications to clusters based on config
+#
+# This ApplicationSet reads cluster configs and deploys the applications
+# listed in each cluster's `applications` array.
+#
+# Uses a matrix generator to combine:
+# 1. Cluster configs from git (clusters/configs/*.yaml)
+# 2. Applications list from each config
+#
+# For each cluster + application combination, creates an Application
+# that deploys to the target cluster.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-applications
+  namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    # Matrix: For each cluster config, generate one app per application in the list
+    - matrix:
+        generators:
+          # Generator 1: Read all cluster configs
+          - git:
+              repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+              revision: main
+              files:
+                - path: "clusters/configs/*.yaml"
+
+          # Generator 2: For each cluster, iterate over its applications list
+          - list:
+              elements: '{{ if .applications }}{{ toJson .applications }}{{ else }}[]{{ end }}'
+
+  template:
+    metadata:
+      # Name format: clustername-appname (e.g., kyle-test-cert-manager)
+      name: '{{.name}}-{{.element.name}}'
+      namespace: openshift-gitops
+    spec:
+      project: hypershift-platform
+      source:
+        repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+        targetRevision: main
+        path: 'platform/apps/{{.element.name}}'
+      destination:
+        # Use cluster name - GitOpsCluster will have registered it
+        name: '{{.name}}'
+        namespace: '{{.element.namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+      # Sync only after cluster is ready
+      ignoreDifferences:
+        - group: "*"
+          kind: "*"
+          managedFieldsManagers:
+            - argocd-application-controller

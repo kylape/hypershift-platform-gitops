@@ -1,0 +1,20 @@
+apiVersion: platform.stackrox.io/v1alpha1
+kind: SecuredCluster
+metadata:
+  name: stackrox-secured-cluster-services
+  namespace: stackrox
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  clusterName: local-cluster
+  admissionControl:
+    listenOnCreates: true
+    listenOnUpdates: true
+  perNode:
+    collector:
+      imageFlavor: Regular
+    taintToleration: TolerateTaints
+  customize:
+    envVars:
+      - name: ROX_VIRTUAL_MACHINES
+        value: "true"
