@@ -50,6 +50,10 @@ spec:
         - name: default
           pod: {}
       subdomain: headless
+      {{- if .Values.arch }}
+      nodeSelector:
+        kubernetes.io/arch: {{ .Values.arch }}
+      {{- end }}
       volumes:
         - dataVolume:
             name: {{ .Values.name }}
