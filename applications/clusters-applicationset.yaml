@@ -48,6 +48,14 @@ spec:
                 - op: replace
                   path: /metadata/name
                   value: "{{name}}"
+                {{- if .labels }}
+                - op: add
+                  path: /metadata/labels
+                  value:
+                    {{- range $key, $value := .labels }}
+                    {{ $key }}: "{{ $value }}"
+                    {{- end }}
+                {{- end }}
             # NodePool patches
             - target:
                 kind: NodePool
