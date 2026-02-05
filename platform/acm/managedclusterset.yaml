@@ -1,0 +1,21 @@
+---
+apiVersion: cluster.open-cluster-management.io/v1beta2
+kind: ManagedClusterSet
+metadata:
+  name: hosted-clusters
+spec:
+  clusterSelector:
+    selectorType: LabelSelector
+    labelSelector:
+      matchLabels:
+        vendor: OpenShift
+        cluster-type: hosted
+
+---
+apiVersion: cluster.open-cluster-management.io/v1beta2
+kind: ManagedClusterSetBinding
+metadata:
+  name: hosted-clusters
+  namespace: openshift-gitops
+spec:
+  clusterSet: hosted-clusters
