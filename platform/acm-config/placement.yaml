@@ -6,11 +6,6 @@ metadata:
 spec:
   clusterSets:
     - hosted-clusters
-  predicates:
-    - requiredClusterSelector:
-        labelSelector:
-          matchLabels:
-            cluster-type: hosted
   tolerations:
     - key: cluster.open-cluster-management.io/unreachable
       operator: Exists

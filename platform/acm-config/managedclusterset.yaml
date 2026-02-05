@@ -5,11 +5,7 @@ metadata:
   name: hosted-clusters
 spec:
   clusterSelector:
-    selectorType: LabelSelector
-    labelSelector:
-      matchLabels:
-        vendor: OpenShift
-        cluster-type: hosted
+    selectorType: ExclusiveClusterSetLabel
 
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta2
