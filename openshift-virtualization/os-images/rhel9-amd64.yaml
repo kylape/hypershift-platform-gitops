@@ -34,7 +34,7 @@ spec:
     spec:
       source:
         registry:
-          imageStream: rhel9-amd64-guest
+          url: docker://registry.redhat.io/rhel9/rhel-guest-image@sha256:bde470e4ff944764e5d79209bf55c62822dc7e9a854667621086b2f09ccb2703
           pullMethod: node
       storage:
         resources:
