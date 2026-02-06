@@ -9,7 +9,11 @@ spec:
       spec:
         sourceRef:
           kind: DataSource
+          {{- if and (eq .Values.rhelVersion "9") (eq .Values.arch "amd64") }}
+          name: rhel9-amd64
+          {{- else }}
           name: rhel{{ .Values.rhelVersion }}
+          {{- end }}
           namespace: openshift-virtualization-os-images
         storage:
           resources:
