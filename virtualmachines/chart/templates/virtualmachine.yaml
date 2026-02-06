@@ -23,6 +23,9 @@ spec:
       labels:
         network.kubevirt.io/headlessService: headless
     spec:
+      {{- if .Values.arch }}
+      architecture: {{ .Values.arch }}
+      {{- end }}
       domain:
         {{- if or (eq .Values.rhelVersion "9") (eq .Values.rhelVersion "10") }}
         features:
