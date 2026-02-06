@@ -35,10 +35,12 @@ spec:
         features:
           smm:
             enabled: false
+        {{- if ne .Values.arch "amd64" }}
         firmware:
           bootloader:
             efi:
               secureBoot: false
+        {{- end }}
         {{- end }}
         resources:
           requests:
