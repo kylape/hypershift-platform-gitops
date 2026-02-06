@@ -32,10 +32,10 @@ spec:
       {{- end }}
       domain:
         {{- if or (eq .Values.rhelVersion "9") (eq .Values.rhelVersion "10") }}
+        {{- if ne .Values.arch "amd64" }}
         features:
           smm:
             enabled: false
-        {{- if ne .Values.arch "amd64" }}
         firmware:
           bootloader:
             efi:
