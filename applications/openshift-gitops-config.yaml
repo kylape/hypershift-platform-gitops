@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openshift-gitops-config
+  namespace: openshift-gitops
+spec:
+  project: hypershift-platform
+  source:
+    repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+    targetRevision: main
+    path: openshift-gitops/config
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openshift-gitops
+  syncPolicy:
+    automated:
+      prune: false  # Don't prune to avoid conflicts with GitOps operator
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true  # Use server-side apply to merge with operator changes
