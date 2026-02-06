@@ -1,6 +1,6 @@
 # VM configuration for rhel-9-acs-test
 name: rhel-9-acs-amd64-test
-rhelVersion: "9"
+rhelVersion: "10"
 arch: amd64
 cores: 1
 memory: 4Gi
