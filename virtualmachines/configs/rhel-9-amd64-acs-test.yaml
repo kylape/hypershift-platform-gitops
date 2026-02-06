@@ -1,0 +1,9 @@
+# VM configuration for rhel-9-acs-test
+name: rhel-9-amd64-acs-test
+rhelVersion: "9"
+arch: amd64
+cores: 1
+memory: 4Gi
+storageSize: 30Gi
+sshKeys:
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDI3MQuBoWRq+Cad6pu/QurHr4jVYGBY+8LHZ43DeiLGYdOPZRqwKqDZrvizRZkAkPV7afsSxuQ6YpcAEP42YioJTHg2zmIAYY8DelKrdUblWL+lm21sBCK5CsGTSKw3FkHqXk+UMENLis9kMy1XGwfYXqbC5BjyQYc762AgIr/6EdlRDTqUuVNeh2N6CupApGOaKwC0KtlonX9MetiHGxiHXKjtY4mOLPhRMCNsNKf+a1Yyi9BbPLYlLxx++Z85owEuJvniszu5rv+tAulvXvj7dbyKjyJQuZtzzvaafZlvvXGSSwBpazwZHkqZpdGUTc5ObKRnTNVDNq4HxpW0OBX klape@klape.remote.csb
