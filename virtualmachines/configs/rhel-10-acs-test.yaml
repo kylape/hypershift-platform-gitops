@@ -1,6 +1,5 @@
 # VM configuration for rhel-10-acs-test
 name: rhel-10-acs-test
-enabled: false
 rhelVersion: "10"
 arch: arm64
 cores: 1
