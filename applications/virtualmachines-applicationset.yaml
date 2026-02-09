@@ -58,6 +58,7 @@ spec:
             memory: "{{.memory}}"
             storageSize: "{{.storageSize}}"
             sshKeys: {{ .sshKeys | toJson }}
+            enabled: {{ if .enabled | eq nil }}true{{ else }}{{ .enabled }}{{ end }}
       destination:
         server: https://kubernetes.default.svc
         namespace: virtualmachines
