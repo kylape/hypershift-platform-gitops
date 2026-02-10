@@ -1,5 +1,5 @@
 # VM configuration for rhel-8-acs-test
-name: rhel-8-acs-test
+name: rhel-8-acs-test2
 rhelVersion: "8"
 arch: arm64
 cores: 1
