@@ -1,5 +1,5 @@
-# Cluster configuration for kyle-test
-name: demo
+# Cluster configuration for demo-cluster
+name: demo-cluster
 arch: arm64
 replicas: 2
 cores: 8
@@ -20,5 +20,7 @@ applications:
     namespace: cert-manager
   - name: external-secrets
     namespace: external-secrets-system
+  - name: stackrox-central
+    namespace: stackrox
   - name: stackrox-secured-cluster
     namespace: stackrox
