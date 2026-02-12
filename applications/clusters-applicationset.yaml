@@ -17,6 +17,8 @@ metadata:
   name: hypershift-clusters
   namespace: openshift-gitops
 spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
   generators:
     # Git file generator - reads YAML files from clusters/configs/
     - git:
@@ -27,7 +29,7 @@ spec:
 
   template:
     metadata:
-      name: 'cluster-{{name}}'
+      name: 'cluster-{{.name}}'
       namespace: openshift-gitops
       annotations:
         argocd.argoproj.io/sync-wave: "3"
@@ -47,7 +49,7 @@ spec:
               patch: |-
                 - op: replace
                   path: /metadata/name
-                  value: "{{name}}"
+                  value: "{{.name}}"
                 {{- if .labels }}
                 - op: add
                   path: /metadata/labels
@@ -63,42 +65,42 @@ spec:
               patch: |-
                 - op: replace
                   path: /metadata/name
-                  value: "{{name}}-workers"
+                  value: "{{.name}}-workers"
                 - op: replace
                   path: /metadata/annotations/hypershift.openshift.io~1kubevirt-vm-jsonpatch
                   value: |
                     [
-                      {"op": "add", "path": "/spec/architecture", "value": "{{arch}}"},
-                      {"op": "add", "path": "/spec/template/spec/architecture", "value": "{{arch}}"},
+                      {"op": "add", "path": "/spec/architecture", "value": "{{.arch}}"},
+                      {"op": "add", "path": "/spec/template/spec/architecture", "value": "{{.arch}}"},
                       {"op": "add", "path": "/spec/template/spec/domain/machine", "value": {"type": "q35"}},
                       {"op": "add", "path": "/spec/template/spec/domain/firmware", "value": {"bootloader": {"efi": {"secureBoot": false}}}},
                       {"op": "add", "path": "/spec/template/spec/domain/features", "value": {"smm": {"enabled": false}}}
                     ]
                 - op: replace
                   path: /spec/clusterName
-                  value: "{{name}}"
+                  value: "{{.name}}"
                 - op: replace
                   path: /spec/replicas
-                  value: {{replicas}}
+                  value: {{.replicas}}
                 - op: replace
                   path: /spec/arch
-                  value: "{{arch}}"
+                  value: "{{.arch}}"
                 - op: replace
                   path: /spec/platform/kubevirt/compute/cores
-                  value: {{cores}}
+                  value: {{.cores}}
                 - op: replace
                   path: /spec/platform/kubevirt/compute/memory
-                  value: "{{memory}}"
+                  value: "{{.memory}}"
                 - op: replace
                   path: /spec/platform/kubevirt/rootVolume/persistent/size
-                  value: "{{storageSize}}"
+                  value: "{{.storageSize}}"
                 - op: replace
                   path: /spec/platform/kubevirt/rootVolume/persistent/storageClass
-                  value: "{{storageClass}}"
+                  value: "{{.storageClass}}"
                 - op: replace
                   path: /spec/platform/kubevirt/nodeSelector
                   value:
-                    kubernetes.io/arch: "{{arch}}"
+                    kubernetes.io/arch: "{{.arch}}"
       destination:
         server: https://kubernetes.default.svc
         namespace: clusters
