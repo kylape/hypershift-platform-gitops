@@ -1,0 +1,24 @@
+# Cluster configuration for kyle-test
+name: demo
+arch: arm64
+replicas: 2
+cores: 8
+memory: 32Gi
+storageSize: 100Gi
+storageClass: lvms-nvme
+
+# ACM labels - applied to ManagedCluster for Placement selection
+labels:
+  environment: development
+  region: us-east
+  cluster-type: hosted
+  vendor: OpenShift
+
+# Applications to deploy to this cluster
+applications:
+  - name: cert-manager
+    namespace: cert-manager
+  - name: external-secrets
+    namespace: external-secrets-system
+  - name: stackrox-secured-cluster
+    namespace: stackrox
