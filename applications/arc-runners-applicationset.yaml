@@ -1,0 +1,75 @@
+---
+# ArgoCD ApplicationSet: GitHub Actions Runner Controller (ARC) runners
+#
+# This ApplicationSet uses the Git file generator to automatically create
+# ARC runner scale sets for each repository config file.
+#
+# To add runners for a new repository:
+#   1. Grant your GitHub App access to the repository
+#   2. Create platform/arc/runners/configs/<org>/<repo>.yaml with configuration
+#   3. Commit and push - ArgoCD will automatically create the runners
+#
+# To remove runners:
+#   1. Delete platform/arc/runners/configs/<org>/<repo>.yaml
+#   2. Commit and push - ArgoCD will automatically delete the runner resources
+#
+# Config file format:
+#   repository: my-repo        # Repository name
+#   org: my-org                # GitHub organization/owner
+#   maxRunners: 20             # Maximum concurrent runners (optional)
+#   minRunners: 0              # Minimum idle runners (optional)
+#   enableAmd64: true          # Enable AMD64 runners (optional)
+#   enableArm64: true          # Enable ARM64 runners (optional)
+#
+# Secret convention:
+#   Kubernetes secret: arc-github-app-<org>
+#   AWS Secrets Manager: arc/github-app/<org>
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: arc-runners
+  namespace: openshift-gitops
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+        revision: main
+        files:
+          - path: "platform/arc/runners/configs/*/*.yaml"
+
+  template:
+    metadata:
+      name: 'arc-runners-{{.org}}-{{.repository}}'
+      namespace: openshift-gitops
+      annotations:
+        argocd.argoproj.io/sync-wave: "4"
+    spec:
+      project: hypershift-platform
+      source:
+        repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+        targetRevision: main
+        path: charts/arc-runners
+        helm:
+          values: |
+            repository: "{{.repository}}"
+            org: "{{.org}}"
+            maxRunners: {{ index . "maxRunners" | default 20 }}
+            minRunners: {{ index . "minRunners" | default 0 }}
+            enableAmd64: {{ index . "enableAmd64" | default true }}
+            enableArm64: {{ index . "enableArm64" | default true }}
+            workStorageSize: "{{ index . "workStorageSize" | default "50Gi" }}"
+            dindStorageSize: "{{ index . "dindStorageSize" | default "50Gi" }}"
+            storageClassName: "{{ index . "storageClassName" | default "lvms-nvme" }}"
+            serviceAccountName: "{{ index . "serviceAccountName" | default "arc-runners-dind" }}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: arc-runners
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

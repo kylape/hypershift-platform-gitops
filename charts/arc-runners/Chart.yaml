@@ -1,0 +1,4 @@
+apiVersion: v2
+name: arc-runners
+version: 1.0.0
+description: GitHub Actions Runner Controller (ARC) runner scale sets for a repository

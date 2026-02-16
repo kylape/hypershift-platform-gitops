@@ -1,0 +1,7 @@
+# ARC runners configuration for kylape/stackrox
+repository: stackrox
+org: kylape
+maxRunners: 20
+minRunners: 0
+enableAmd64: true
+enableArm64: true

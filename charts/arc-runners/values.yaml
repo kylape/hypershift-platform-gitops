@@ -1,0 +1,27 @@
+# Default values for arc-runners
+# These can be overridden by the ApplicationSet
+
+# Repository configuration
+repository: ""     # Repository name (e.g., "stackrox")
+org: ""            # GitHub organization/owner
+
+# Secret configuration (managed by External Secrets)
+# Secret name convention: arc-github-app-<org>
+# AWS Secrets Manager path: arc/github-app/<org>
+# Required keys: github_app_id, github_app_installation_id, github_app_private_key
+
+# Runner configuration
+minRunners: 0
+maxRunners: 20
+
+# Storage configuration
+workStorageSize: "50Gi"
+dindStorageSize: "50Gi"
+storageClassName: "lvms-nvme"
+
+# Architecture options
+enableAmd64: true
+enableArm64: true
+
+# Service account name
+serviceAccountName: "arc-runners-dind"
