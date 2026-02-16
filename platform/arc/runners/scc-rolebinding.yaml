@@ -6,7 +6,7 @@ metadata:
   name: arc-runners-privileged-scc
 subjects:
   - kind: ServiceAccount
-    name: stackrox-runners-dind
+    name: arc-runners-dind
     namespace: arc-runners
 roleRef:
   kind: ClusterRole
