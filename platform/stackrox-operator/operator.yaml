@@ -4295,7 +4295,7 @@ spec:
               containerName: manager
               divisor: '0'
               resource: limits.memory
-        image: quay.io/stackrox-io/stackrox-operator:4.11.0-nightly-20260202
+        image: quay.io/stackrox-io/stackrox-operator:4.10.0-rc.4
         livenessProbe:
           httpGet:
             path: /healthz
