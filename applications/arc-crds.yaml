@@ -1,0 +1,27 @@
+---
+# ArgoCD Application: ARC CRDs
+# Deploys CRDs for GitHub Actions Runner Controller
+# Separated from main arc app to avoid sync drift from server-side field additions
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: arc-crds
+  namespace: openshift-gitops
+  annotations:
+    # Deploy before the main arc application
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: hypershift-platform
+  source:
+    repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+    targetRevision: main
+    path: platform/arc-crds
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      # Use Replace instead of ServerSideApply to avoid drift from API server field additions
+      - Replace=true

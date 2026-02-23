@@ -1,6 +1,7 @@
 ---
 # ArgoCD Application: GitHub Actions Runner Controller (ARC)
-# Deploys self-hosted runners for GitHub Actions workflows
+# Deploys controller and RBAC for self-hosted GitHub Actions runners
+# CRDs are managed separately by arc-crds application
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
