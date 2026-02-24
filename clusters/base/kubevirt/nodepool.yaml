@@ -5,13 +5,15 @@ metadata:
   namespace: clusters
   annotations:
     # Configure VMs for mixed-arch cluster with MultiArchitecture feature gate
+    # Also adds toleration so VMs can schedule on tainted bare metal pools
     hypershift.openshift.io/kubevirt-vm-jsonpatch: |
       [
         {"op": "add", "path": "/spec/architecture", "value": "CLUSTER_ARCH"},
         {"op": "add", "path": "/spec/template/spec/architecture", "value": "CLUSTER_ARCH"},
         {"op": "add", "path": "/spec/template/spec/domain/machine", "value": {"type": "q35"}},
         {"op": "add", "path": "/spec/template/spec/domain/firmware", "value": {"bootloader": {"efi": {"secureBoot": false}}}},
-        {"op": "add", "path": "/spec/template/spec/domain/features", "value": {"smm": {"enabled": false}}}
+        {"op": "add", "path": "/spec/template/spec/domain/features", "value": {"smm": {"enabled": false}}},
+        {"op": "add", "path": "/spec/template/spec/tolerations", "value": [{"key": "workload-type", "operator": "Equal", "value": "kubevirt-vm", "effect": "NoSchedule"}]}
       ]
 spec:
   clusterName: CLUSTER_NAME
@@ -40,9 +42,3 @@ spec:
         type: Persistent
       nodeSelector:
         kubernetes.io/arch: amd64
-      # Toleration for bare metal taint - allows VMs to schedule on tainted bare metal pools
-      tolerations:
-        - key: "workload-type"
-          operator: "Equal"
-          value: "kubevirt-vm"
-          effect: "NoSchedule"

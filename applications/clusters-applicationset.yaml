@@ -79,7 +79,8 @@ spec:
                       {"op": "add", "path": "/spec/template/spec/architecture", "value": "{{ default "amd64" .arch }}"},
                       {"op": "add", "path": "/spec/template/spec/domain/machine", "value": {"type": "q35"}},
                       {"op": "add", "path": "/spec/template/spec/domain/firmware", "value": {"bootloader": {"efi": {"secureBoot": false}}}},
-                      {"op": "add", "path": "/spec/template/spec/domain/features", "value": {"smm": {"enabled": false}}}
+                      {"op": "add", "path": "/spec/template/spec/domain/features", "value": {"smm": {"enabled": false}}},
+                      {"op": "add", "path": "/spec/template/spec/tolerations", "value": [{"key": "workload-type", "operator": "Equal", "value": "kubevirt-vm", "effect": "NoSchedule"}]}
                     ]
                 - op: replace
                   path: /spec/clusterName
