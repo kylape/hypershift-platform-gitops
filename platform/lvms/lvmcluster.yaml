@@ -18,8 +18,20 @@ spec:
                 - key: node.kubernetes.io/instance-type
                   operator: In
                   values:
+                    # Bare metal nodes
                     - m7gd.metal
                     - c6id.metal
+                    # General NVMe nodes (amd64)
+                    - m5d.xlarge
+                    - m5d.2xlarge
+                    - m5d.4xlarge
+                    - m6id.xlarge
+                    - m6id.2xlarge
+                    # General NVMe nodes (arm64)
+                    - m6gd.xlarge
+                    - m6gd.2xlarge
+                    - m7gd.xlarge
+                    - m7gd.2xlarge
         deviceSelector:
           forceWipeDevicesAndDestroyAllData: true
           optionalPaths:
