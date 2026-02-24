@@ -6,7 +6,7 @@
 #
 # Supported platform types:
 #   - kubevirt (default): KubeVirt-based hosted cluster workers (VMs on bare metal)
-#   - aws: EC2-based hosted cluster workers
+#   - aws: EC2-based hosted cluster workers (future)
 #
 # To add a new cluster:
 #   1. Create clusters/configs/<cluster-name>.yaml with cluster configuration
@@ -43,11 +43,11 @@ spec:
         repoURL: https://github.com/kylape/hypershift-platform-gitops.git
         targetRevision: main
         # Select base directory based on platformType (default: kubevirt)
-        path: 'clusters/base/{{ .platformType | default "kubevirt" }}'
+        path: 'clusters/base/{{ default "kubevirt" .platformType }}'
         kustomize:
           # Use Kustomize patches to substitute values from config into templates
           patches:
-            # HostedCluster patches - common for all platforms
+            # HostedCluster patches
             - target:
                 kind: HostedCluster
                 name: CLUSTER_NAME
@@ -63,8 +63,7 @@ spec:
                     {{ $key }}: "{{ $value }}"
                     {{- end }}
                 {{- end }}
-
-            # NodePool patches - common fields
+            # NodePool patches
             - target:
                 kind: NodePool
                 name: CLUSTER_NAME-workers
@@ -73,120 +72,48 @@ spec:
                   path: /metadata/name
                   value: "{{.name}}-workers"
                 - op: replace
-                  path: /spec/clusterName
-                  value: "{{.name}}"
-                - op: replace
-                  path: /spec/replicas
-                  value: {{ .replicas | default 2 }}
-                - op: replace
-                  path: /spec/arch
-                  value: "{{ .arch | default "amd64" }}"
-
-            # KubeVirt-specific NodePool patches
-            {{- if or (not .platformType) (eq .platformType "kubevirt") }}
-            - target:
-                kind: NodePool
-                name: CLUSTER_NAME-workers
-              patch: |-
-                - op: replace
                   path: /metadata/annotations/hypershift.openshift.io~1kubevirt-vm-jsonpatch
                   value: |
                     [
-                      {"op": "add", "path": "/spec/architecture", "value": "{{ .arch | default "amd64" }}"},
-                      {"op": "add", "path": "/spec/template/spec/architecture", "value": "{{ .arch | default "amd64" }}"},
+                      {"op": "add", "path": "/spec/architecture", "value": "{{ default "amd64" .arch }}"},
+                      {"op": "add", "path": "/spec/template/spec/architecture", "value": "{{ default "amd64" .arch }}"},
                       {"op": "add", "path": "/spec/template/spec/domain/machine", "value": {"type": "q35"}},
                       {"op": "add", "path": "/spec/template/spec/domain/firmware", "value": {"bootloader": {"efi": {"secureBoot": false}}}},
                       {"op": "add", "path": "/spec/template/spec/domain/features", "value": {"smm": {"enabled": false}}}
                     ]
                 - op: replace
+                  path: /spec/clusterName
+                  value: "{{.name}}"
+                - op: replace
+                  path: /spec/replicas
+                  value: {{ default 2 .replicas }}
+                - op: replace
+                  path: /spec/arch
+                  value: "{{ default "amd64" .arch }}"
+                - op: replace
                   path: /spec/platform/kubevirt/compute/cores
-                  value: {{ .cores | default 8 }}
+                  value: {{ default 8 .cores }}
                 - op: replace
                   path: /spec/platform/kubevirt/compute/memory
-                  value: "{{ .memory | default "32Gi" }}"
+                  value: "{{ default "32Gi" .memory }}"
                 - op: replace
                   path: /spec/platform/kubevirt/rootVolume/persistent/size
-                  value: "{{ .storageSize | default "100Gi" }}"
+                  value: "{{ default "100Gi" .storageSize }}"
                 - op: replace
                   path: /spec/platform/kubevirt/rootVolume/persistent/storageClass
-                  value: "{{ .storageClass | default "gp3-csi" }}"
+                  value: "{{ default "gp3-csi" .storageClass }}"
                 - op: replace
                   path: /spec/platform/kubevirt/nodeSelector
                   value:
-                    kubernetes.io/arch: "{{ .arch | default "amd64" }}"
-            {{- end }}
-
-            # AWS-specific HostedCluster patches
-            {{- if eq .platformType "aws" }}
-            - target:
-                kind: HostedCluster
-                name: CLUSTER_NAME
-              patch: |-
-                - op: replace
-                  path: /spec/platform/aws/rolesRef/ingressARN
-                  value: "{{ .ingressARN }}"
-                - op: replace
-                  path: /spec/platform/aws/rolesRef/imageRegistryARN
-                  value: "{{ .imageRegistryARN }}"
-                - op: replace
-                  path: /spec/platform/aws/rolesRef/storageARN
-                  value: "{{ .storageARN }}"
-                - op: replace
-                  path: /spec/platform/aws/rolesRef/networkARN
-                  value: "{{ .networkARN }}"
-                - op: replace
-                  path: /spec/platform/aws/rolesRef/kubeCloudControllerARN
-                  value: "{{ .kubeCloudControllerARN }}"
-                - op: replace
-                  path: /spec/platform/aws/rolesRef/nodePoolManagementARN
-                  value: "{{ .nodePoolManagementARN }}"
-                - op: replace
-                  path: /spec/platform/aws/rolesRef/controlPlaneOperatorARN
-                  value: "{{ .controlPlaneOperatorARN }}"
-            {{- end }}
-
-            # AWS-specific NodePool patches
-            {{- if eq .platformType "aws" }}
-            - target:
-                kind: NodePool
-                name: CLUSTER_NAME-workers
-              patch: |-
-                - op: replace
-                  path: /spec/platform/aws/instanceType
-                  value: "{{ .instanceType | default "m5.xlarge" }}"
-                - op: replace
-                  path: /spec/platform/aws/instanceProfile
-                  value: "{{ .instanceProfile }}"
-                - op: replace
-                  path: /spec/platform/aws/rootVolume/size
-                  value: {{ .rootVolumeSize | default 120 }}
-                - op: replace
-                  path: /spec/platform/aws/subnet/id
-                  value: "{{ .subnetId }}"
-                - op: replace
-                  path: /spec/platform/aws/securityGroups/0/id
-                  value: "{{ .securityGroupId }}"
-            {{- end }}
-
+                    kubernetes.io/arch: "{{ default "amd64" .arch }}"
       destination:
         server: https://kubernetes.default.svc
         namespace: clusters
       ignoreDifferences:
-        # KubeVirt-specific fields
         - group: hypershift.openshift.io
           kind: HostedCluster
           jsonPointers:
             - /spec/platform/kubevirt/generateID
-        # AWS-specific fields that may be populated by the operator
-        - group: hypershift.openshift.io
-          kind: HostedCluster
-          jsonPointers:
-            - /spec/platform/aws/resourceTags
-            - /spec/infraID
-        - group: hypershift.openshift.io
-          kind: NodePool
-          jsonPointers:
-            - /spec/platform/aws/ami
       syncPolicy:
         automated:
           prune: true
