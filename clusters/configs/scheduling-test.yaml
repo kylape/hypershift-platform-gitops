@@ -1,0 +1,11 @@
+# Test cluster to verify scheduling behavior:
+# - Control plane pods should schedule on M5d/M6gd general pools (no taints)
+# - KubeVirt VMs should schedule on bare metal pools (with kubevirt-vm toleration)
+name: scheduling-test
+platformType: kubevirt
+arch: amd64
+replicas: 1
+cores: 4
+memory: 8Gi
+storageSize: 30Gi
+storageClass: lvms-nvme
