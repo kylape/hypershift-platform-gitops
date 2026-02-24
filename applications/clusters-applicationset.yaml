@@ -22,7 +22,7 @@ metadata:
   namespace: openshift-gitops
 spec:
   goTemplate: true
-  goTemplateOptions: ["missingkey=error"]
+  goTemplateOptions: ["missingkey=zero"]
   generators:
     # Git file generator - reads YAML files from clusters/configs/
     - git:
