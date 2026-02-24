@@ -7,6 +7,11 @@ metadata:
     argocd.argoproj.io/sync-wave: "1"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
+  tolerations:
+    - key: "workload-type"
+      operator: "Equal"
+      value: "kubevirt-vm"
+      effect: "NoSchedule"
   storage:
     deviceClasses:
       - name: nvme
