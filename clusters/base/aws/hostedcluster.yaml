@@ -1,0 +1,54 @@
+apiVersion: hypershift.openshift.io/v1beta1
+kind: HostedCluster
+metadata:
+  name: CLUSTER_NAME
+  namespace: clusters
+spec:
+  controllerAvailabilityPolicy: SingleReplica
+  # No nodeSelector - use default M5 pool for control plane pods
+  release:
+    image: quay.io/openshift-release-dev/ocp-release:4.18.30-multi
+  pullSecret:
+    name: pull-secret
+  etcd:
+    managed:
+      storage:
+        persistentVolume:
+          size: 8Gi
+        type: PersistentVolume
+    managementType: Managed
+  platform:
+    type: AWS
+    aws:
+      region: us-east-1
+      endpointAccess: Public
+      rolesRef:
+        ingressARN: INGRESS_ARN
+        imageRegistryARN: IMAGE_REGISTRY_ARN
+        storageARN: STORAGE_ARN
+        networkARN: NETWORK_ARN
+        kubeCloudControllerARN: KUBE_CLOUD_CONTROLLER_ARN
+        nodePoolManagementARN: NODE_POOL_MANAGEMENT_ARN
+        controlPlaneOperatorARN: CONTROL_PLANE_OPERATOR_ARN
+  networking:
+    clusterNetwork:
+      - cidr: 10.132.0.0/14
+    networkType: OVNKubernetes
+    serviceNetwork:
+      - cidr: 172.31.0.0/16
+  services:
+    - service: APIServer
+      servicePublishingStrategy:
+        type: LoadBalancer
+    - service: OAuthServer
+      servicePublishingStrategy:
+        type: Route
+    - service: Konnectivity
+      servicePublishingStrategy:
+        type: Route
+    - service: Ignition
+      servicePublishingStrategy:
+        type: Route
+    - service: OVNSbDb
+      servicePublishingStrategy:
+        type: Route

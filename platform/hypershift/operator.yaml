@@ -503,7 +503,7 @@ spec:
         - name: ENABLE_ETCD_RECOVERY
           value: "1"
         - name: PLATFORMS_INSTALLED
-          value: KubeVirt
+          value: KubeVirt,AWS
         image: quay.io/hypershift/hypershift-operator:latest
         imagePullPolicy: IfNotPresent
         livenessProbe:
@@ -575,8 +575,7 @@ spec:
           readOnly: true
         - mountPath: /trust-bundle
           name: trusted-ca-bundle
-      nodeSelector:
-        kubernetes.io/arch: amd64
+      # No nodeSelector - use default M5 pool
       priorityClassName: hypershift-operator
       serviceAccountName: operator
       volumes:

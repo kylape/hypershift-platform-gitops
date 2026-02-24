@@ -40,3 +40,9 @@ spec:
         type: Persistent
       nodeSelector:
         kubernetes.io/arch: amd64
+      # Toleration for bare metal taint - allows VMs to schedule on tainted bare metal pools
+      tolerations:
+        - key: "workload-type"
+          operator: "Equal"
+          value: "kubevirt-vm"
+          effect: "NoSchedule"
