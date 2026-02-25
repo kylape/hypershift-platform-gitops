@@ -1,0 +1,93 @@
+---
+# ArgoCD ApplicationSet: Deploy AWS EC2-based HyperShift hosted clusters
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: hypershift-clusters-aws
+  namespace: openshift-gitops
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=zero"]
+  generators:
+    - git:
+        repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+        revision: main
+        files:
+          - path: "clusters/configs/aws/*.yaml"
+
+  template:
+    metadata:
+      name: 'cluster-aws-{{.name}}'
+      namespace: openshift-gitops
+      annotations:
+        argocd.argoproj.io/sync-wave: "3"
+    spec:
+      project: hypershift-platform
+      source:
+        repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+        targetRevision: main
+        path: 'clusters/base/aws'
+        kustomize:
+          patches:
+            # HostedCluster patches
+            - target:
+                kind: HostedCluster
+                name: CLUSTER_NAME
+              patch: |-
+                - op: replace
+                  path: /metadata/name
+                  value: "aws-{{.name}}"
+                {{- if .labels }}
+                - op: add
+                  path: /metadata/labels
+                  value:
+                    {{- range $key, $value := .labels }}
+                    {{ $key }}: "{{ $value }}"
+                    {{- end }}
+                {{- end }}
+            # NodePool patches
+            - target:
+                kind: NodePool
+                name: CLUSTER_NAME-workers
+              patch: |-
+                - op: replace
+                  path: /metadata/name
+                  value: "aws-{{.name}}-workers"
+                - op: replace
+                  path: /spec/clusterName
+                  value: "aws-{{.name}}"
+                - op: replace
+                  path: /spec/replicas
+                  value: {{ default 2 .replicas }}
+                - op: replace
+                  path: /spec/platform/aws/instanceType
+                  value: "{{ default "m5.xlarge" .instanceType }}"
+            # Patch Job patches
+            - target:
+                kind: Job
+                name: patch-aws-config-CLUSTER_NAME
+              patch: |-
+                - op: replace
+                  path: /metadata/name
+                  value: "patch-aws-config-aws-{{.name}}"
+                - op: replace
+                  path: /spec/template/spec/containers/0/env/0/value
+                  value: "aws-{{.name}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: clusters
+      ignoreDifferences:
+        - group: hypershift.openshift.io
+          kind: HostedCluster
+          jsonPointers:
+            - /spec/platform/aws/rolesRef
+        - group: hypershift.openshift.io
+          kind: NodePool
+          jsonPointers:
+            - /spec/platform/aws/instanceProfile
+            - /spec/platform/aws/subnet
+            - /spec/platform/aws/securityGroups
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

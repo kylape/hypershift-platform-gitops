@@ -1,39 +1,23 @@
 ---
-# ArgoCD ApplicationSet: Deploy HyperShift hosted clusters from config files
-#
-# This ApplicationSet uses the Git file generator to automatically create
-# an Application for each cluster config file in clusters/configs/.
-#
-# Supported platform types:
-#   - kubevirt (default): KubeVirt-based hosted cluster workers (VMs on bare metal)
-#   - aws: EC2-based hosted cluster workers (future)
-#
-# To add a new cluster:
-#   1. Create clusters/configs/<cluster-name>.yaml with cluster configuration
-#   2. Commit and push - ArgoCD will automatically create the cluster
-#
-# To remove a cluster:
-#   1. Delete clusters/configs/<cluster-name>.yaml
-#   2. Commit and push - ArgoCD will automatically delete the cluster resources
+# ArgoCD ApplicationSet: Deploy KubeVirt-based HyperShift hosted clusters
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: hypershift-clusters
+  name: hypershift-clusters-kubevirt
   namespace: openshift-gitops
 spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=zero"]
   generators:
-    # Git file generator - reads YAML files from clusters/configs/
     - git:
         repoURL: https://github.com/kylape/hypershift-platform-gitops.git
         revision: main
         files:
-          - path: "clusters/configs/*.yaml"
+          - path: "clusters/configs/kubevirt/*.yaml"
 
   template:
     metadata:
-      name: 'cluster-{{.name}}'
+      name: 'cluster-kubevirt-{{.name}}'
       namespace: openshift-gitops
       annotations:
         argocd.argoproj.io/sync-wave: "3"
@@ -42,10 +26,8 @@ spec:
       source:
         repoURL: https://github.com/kylape/hypershift-platform-gitops.git
         targetRevision: main
-        # Select base directory based on platformType (default: kubevirt)
-        path: 'clusters/base/{{ default "kubevirt" .platformType }}'
+        path: 'clusters/base/kubevirt'
         kustomize:
-          # Use Kustomize patches to substitute values from config into templates
           patches:
             # HostedCluster patches
             - target:
@@ -54,7 +36,7 @@ spec:
               patch: |-
                 - op: replace
                   path: /metadata/name
-                  value: "{{.name}}"
+                  value: "kubevirt-{{.name}}"
                 {{- if .labels }}
                 - op: add
                   path: /metadata/labels
@@ -70,7 +52,7 @@ spec:
               patch: |-
                 - op: replace
                   path: /metadata/name
-                  value: "{{.name}}-workers"
+                  value: "kubevirt-{{.name}}-workers"
                 - op: replace
                   path: /metadata/annotations/hypershift.openshift.io~1kubevirt-vm-jsonpatch
                   value: |
@@ -84,7 +66,7 @@ spec:
                     ]
                 - op: replace
                   path: /spec/clusterName
-                  value: "{{.name}}"
+                  value: "kubevirt-{{.name}}"
                 - op: replace
                   path: /spec/replicas
                   value: {{ default 2 .replicas }}
