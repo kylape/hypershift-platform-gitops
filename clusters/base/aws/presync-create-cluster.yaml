@@ -87,6 +87,9 @@ spec:
               INSTANCE_PROFILE=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.instanceProfile}' | base64 -d)
               SUBNET_ID=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.subnetId}' | base64 -d)
               SECURITY_GROUP_ID=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.securityGroupId}' | base64 -d)
+              VPC_ID=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.vpcId}' | base64 -d)
+              OIDC_ISSUER_URL=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.oidcIssuerURL}' | base64 -d)
+              BASE_DOMAIN=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.baseDomain}' | base64 -d)
 
               echo "Creating HostedCluster ${CLUSTER_NAME}..."
               cat <<YAML | oc apply -f -
@@ -97,6 +100,9 @@ spec:
                 namespace: clusters
               spec:
                 controllerAvailabilityPolicy: SingleReplica
+                issuerURL: "${OIDC_ISSUER_URL}"
+                dns:
+                  baseDomain: "${BASE_DOMAIN}"
                 release:
                   image: quay.io/openshift-release-dev/ocp-release:4.18.30-multi
                 pullSecret:
@@ -113,6 +119,10 @@ spec:
                   aws:
                     region: us-east-1
                     endpointAccess: Public
+                    cloudProviderConfig:
+                      vpc: "${VPC_ID}"
+                      subnet:
+                        id: "${SUBNET_ID}"
                     rolesRef:
                       ingressARN: "${INGRESS_ARN}"
                       imageRegistryARN: "${IMAGE_REGISTRY_ARN}"
