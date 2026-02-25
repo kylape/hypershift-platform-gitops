@@ -1,0 +1,182 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aws-cluster-creator
+  namespace: clusters
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: aws-cluster-creator
+  namespace: clusters
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get"]
+  - apiGroups: ["hypershift.openshift.io"]
+    resources: ["hostedclusters", "nodepools"]
+    verbs: ["get", "create", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: aws-cluster-creator
+  namespace: clusters
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+subjects:
+  - kind: ServiceAccount
+    name: aws-cluster-creator
+    namespace: clusters
+roleRef:
+  kind: Role
+  name: aws-cluster-creator
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-aws-cluster-CLUSTER_NAME
+  namespace: clusters
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      serviceAccountName: aws-cluster-creator
+      restartPolicy: OnFailure
+      containers:
+        - name: creator
+          image: registry.redhat.io/openshift4/ose-cli:latest
+          env:
+            - name: CLUSTER_NAME
+              value: "CLUSTER_NAME"
+            - name: INSTANCE_TYPE
+              value: "INSTANCE_TYPE"
+            - name: REPLICAS
+              value: "REPLICAS"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+
+              # Check if cluster already exists
+              if oc get hostedcluster ${CLUSTER_NAME} -n clusters &>/dev/null; then
+                echo "HostedCluster ${CLUSTER_NAME} already exists, skipping creation"
+                exit 0
+              fi
+
+              echo "Reading AWS config from secret..."
+              INGRESS_ARN=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.ingressARN}' | base64 -d)
+              IMAGE_REGISTRY_ARN=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.imageRegistryARN}' | base64 -d)
+              STORAGE_ARN=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.storageARN}' | base64 -d)
+              NETWORK_ARN=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.networkARN}' | base64 -d)
+              KUBE_CLOUD_CONTROLLER_ARN=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.kubeCloudControllerARN}' | base64 -d)
+              NODE_POOL_MANAGEMENT_ARN=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.nodePoolManagementARN}' | base64 -d)
+              CONTROL_PLANE_OPERATOR_ARN=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.controlPlaneOperatorARN}' | base64 -d)
+              INSTANCE_PROFILE=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.instanceProfile}' | base64 -d)
+              SUBNET_ID=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.subnetId}' | base64 -d)
+              SECURITY_GROUP_ID=$(oc get secret hypershift-aws-config -n clusters -o jsonpath='{.data.securityGroupId}' | base64 -d)
+
+              echo "Creating HostedCluster ${CLUSTER_NAME}..."
+              cat <<YAML | oc apply -f -
+              apiVersion: hypershift.openshift.io/v1beta1
+              kind: HostedCluster
+              metadata:
+                name: ${CLUSTER_NAME}
+                namespace: clusters
+              spec:
+                controllerAvailabilityPolicy: SingleReplica
+                release:
+                  image: quay.io/openshift-release-dev/ocp-release:4.18.30-multi
+                pullSecret:
+                  name: pull-secret
+                etcd:
+                  managed:
+                    storage:
+                      persistentVolume:
+                        size: 8Gi
+                      type: PersistentVolume
+                  managementType: Managed
+                platform:
+                  type: AWS
+                  aws:
+                    region: us-east-1
+                    endpointAccess: Public
+                    rolesRef:
+                      ingressARN: "${INGRESS_ARN}"
+                      imageRegistryARN: "${IMAGE_REGISTRY_ARN}"
+                      storageARN: "${STORAGE_ARN}"
+                      networkARN: "${NETWORK_ARN}"
+                      kubeCloudControllerARN: "${KUBE_CLOUD_CONTROLLER_ARN}"
+                      nodePoolManagementARN: "${NODE_POOL_MANAGEMENT_ARN}"
+                      controlPlaneOperatorARN: "${CONTROL_PLANE_OPERATOR_ARN}"
+                networking:
+                  clusterNetwork:
+                    - cidr: 10.132.0.0/14
+                  networkType: OVNKubernetes
+                  serviceNetwork:
+                    - cidr: 172.31.0.0/16
+                services:
+                  - service: APIServer
+                    servicePublishingStrategy:
+                      type: LoadBalancer
+                  - service: OAuthServer
+                    servicePublishingStrategy:
+                      type: Route
+                  - service: Konnectivity
+                    servicePublishingStrategy:
+                      type: Route
+                  - service: Ignition
+                    servicePublishingStrategy:
+                      type: Route
+                  - service: OVNSbDb
+                    servicePublishingStrategy:
+                      type: Route
+              YAML
+
+              echo "Creating NodePool ${CLUSTER_NAME}-workers..."
+              cat <<YAML | oc apply -f -
+              apiVersion: hypershift.openshift.io/v1beta1
+              kind: NodePool
+              metadata:
+                name: ${CLUSTER_NAME}-workers
+                namespace: clusters
+              spec:
+                clusterName: ${CLUSTER_NAME}
+                replicas: ${REPLICAS}
+                management:
+                  autoRepair: true
+                  replace:
+                    strategy: RollingUpdate
+                    rollingUpdate:
+                      maxUnavailable: 1
+                      maxSurge: 1
+                  upgradeType: Replace
+                release:
+                  image: quay.io/openshift-release-dev/ocp-release:4.18.30-multi
+                platform:
+                  type: AWS
+                  aws:
+                    instanceType: ${INSTANCE_TYPE}
+                    instanceProfile: ${INSTANCE_PROFILE}
+                    rootVolume:
+                      size: 120
+                      type: gp3
+                    subnet:
+                      id: ${SUBNET_ID}
+                    securityGroups:
+                      - id: ${SECURITY_GROUP_ID}
+              YAML
+
+              echo "Done!"

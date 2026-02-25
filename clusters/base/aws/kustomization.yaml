@@ -3,6 +3,4 @@ kind: Kustomization
 
 resources:
   - external-secret.yaml
-  - hostedcluster.yaml
-  - nodepool.yaml
-  - patch-aws-config-job.yaml
+  - presync-create-cluster.yaml
