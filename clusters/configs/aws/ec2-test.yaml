@@ -1,4 +1,0 @@
-# Test cluster with EC2-based workers
-name: ec2-test
-replicas: 1
-instanceType: m5d.xlarge
