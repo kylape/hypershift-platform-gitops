@@ -51,5 +51,5 @@ spec:
         namespace: clusters
       syncPolicy:
         automated:
-          prune: true
+          prune: false
           selfHeal: true
