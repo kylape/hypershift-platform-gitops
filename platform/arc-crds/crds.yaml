@@ -6,6 +6,8 @@ metadata:
     controller-gen.kubebuilder.io/version: v0.14.0
   name: autoscalinglisteners.actions.github.com
 spec:
+  conversion:
+    strategy: None
   group: actions.github.com
   names:
     kind: AutoscalingListener
@@ -7016,6 +7018,8 @@ metadata:
     controller-gen.kubebuilder.io/version: v0.14.0
   name: autoscalingrunnersets.actions.github.com
 spec:
+  conversion:
+    strategy: None
   group: actions.github.com
   names:
     kind: AutoscalingRunnerSet
@@ -20865,6 +20869,8 @@ metadata:
     controller-gen.kubebuilder.io/version: v0.14.0
   name: ephemeralrunners.actions.github.com
 spec:
+  conversion:
+    strategy: None
   group: actions.github.com
   names:
     kind: EphemeralRunner
@@ -27884,6 +27890,8 @@ metadata:
     controller-gen.kubebuilder.io/version: v0.14.0
   name: ephemeralrunnersets.actions.github.com
 spec:
+  conversion:
+    strategy: None
   group: actions.github.com
   names:
     kind: EphemeralRunnerSet
