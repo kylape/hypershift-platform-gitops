@@ -27,7 +27,7 @@ spec:
   syncPolicy:
     automated:
       prune: true
-      selfHeal: true
+      selfHeal: false  # Disabled - CRD drift is cosmetic, manual sync when needed
     syncOptions:
       # Use Replace instead of ServerSideApply to avoid drift from API server field additions
       - Replace=true
