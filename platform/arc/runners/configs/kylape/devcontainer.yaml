@@ -5,3 +5,5 @@ maxRunners: 20
 minRunners: 0
 enableAmd64: true
 enableArm64: true
+# Create ExternalSecret for this org (only one repo per org should set this)
+createExternalSecret: true

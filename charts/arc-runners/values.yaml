@@ -25,3 +25,7 @@ enableArm64: true
 
 # Service account name
 serviceAccountName: "arc-runners-dind"
+
+# Create ExternalSecret for GitHub App credentials
+# Only set to true for one repo per org to avoid conflicts
+createExternalSecret: false
