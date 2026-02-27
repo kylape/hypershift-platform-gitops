@@ -1,0 +1,7 @@
+name: config-controller-bug
+arch: amd64
+replicas: 2
+cores: 8
+memory: 16Gi
+storageSize: 80Gi
+storageClass: lvms-nvme
