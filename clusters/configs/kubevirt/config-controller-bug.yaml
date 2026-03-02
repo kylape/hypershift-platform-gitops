@@ -5,3 +5,10 @@ cores: 8
 memory: 16Gi
 storageSize: 80Gi
 storageClass: lvms-nvme
+
+# Applications to deploy to this cluster
+apps:
+  - name: stackrox-operator
+    image: quay.io/stackrox-io/stackrox-operator:4.10.0-rc.4
+  - name: stackrox-secured-cluster
+    centralEndpoint: central.stackrox.svc:443

@@ -1,0 +1,97 @@
+---
+# ArgoCD ApplicationSet: Deploy apps to hosted clusters based on per-cluster config
+#
+# This ApplicationSet reads cluster configs from clusters/configs/kubevirt/*.yaml
+# and deploys the apps specified in each cluster's `apps` list.
+#
+# Cluster config example:
+#   name: my-cluster
+#   apps:
+#     - name: stackrox-operator
+#       image: quay.io/stackrox-io/stackrox-operator:4.10.0-rc.4
+#     - name: stackrox-secured-cluster
+#       centralEndpoint: central.stackrox.svc:443
+#
+# Supported app parameters:
+#   - image: Full image reference (e.g., quay.io/stackrox-io/stackrox-operator:4.10.0-rc.4)
+#   - centralEndpoint: Central endpoint for SecuredCluster (e.g., central.stackrox.svc:443)
+#
+# Each app in the list generates a separate ArgoCD Application that deploys
+# to the corresponding hosted cluster.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-apps
+  namespace: openshift-gitops
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=zero"]
+  generators:
+    - matrix:
+        generators:
+          # First: read cluster configs
+          - git:
+              repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+              revision: main
+              files:
+                - path: "clusters/configs/kubevirt/*.yaml"
+          # Second: expand the apps list from each cluster config
+          - list:
+              elementsYaml: "{{ .apps | toJson }}"
+
+  template:
+    metadata:
+      # name0 is the app name from the list generator
+      name: 'kubevirt-{{ .name }}-{{ index . "name0" }}'
+      namespace: openshift-gitops
+      labels:
+        cluster: 'kubevirt-{{ .name }}'
+        app: '{{ index . "name0" }}'
+      annotations:
+        argocd.argoproj.io/sync-wave: "2"
+    spec:
+      project: hypershift-platform
+      source:
+        repoURL: https://github.com/kylape/hypershift-platform-gitops.git
+        targetRevision: main
+        path: 'platform/apps/{{ index . "name0" }}'
+        kustomize:
+          # Override image if specified in app config
+          {{- if .image }}
+          images:
+            - '{{ .image }}'
+          {{- end }}
+          # Add patches for app-specific parameters
+          patches:
+            {{- if .centralEndpoint }}
+            - target:
+                kind: SecuredCluster
+                name: stackrox-secured-cluster-services
+              patch: |-
+                - op: add
+                  path: /spec/centralEndpoint
+                  value: "{{ .centralEndpoint }}"
+            - target:
+                kind: Job
+                name: create-init-bundle
+              patch: |-
+                - op: replace
+                  path: /spec/template/spec/containers/0/env/0/value
+                  value: "https://{{ .centralEndpoint }}"
+            {{- end }}
+      destination:
+        # Deploy to the hosted cluster (requires ACM GitOpsCluster integration)
+        name: 'kubevirt-{{ .name }}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 30s
+            factor: 2
+            maxDuration: 5m

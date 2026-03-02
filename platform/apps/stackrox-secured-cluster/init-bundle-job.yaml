@@ -1,0 +1,114 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: init-bundle-creator
+  namespace: stackrox
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: init-bundle-creator
+  namespace: stackrox
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: init-bundle-creator
+  namespace: stackrox
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: init-bundle-creator
+subjects:
+  - kind: ServiceAccount
+    name: init-bundle-creator
+    namespace: stackrox
+---
+# Job to fetch init bundle from Central
+# Central endpoint is configured via CENTRAL_ENDPOINT env var
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-init-bundle
+  namespace: stackrox
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      serviceAccountName: init-bundle-creator
+      restartPolicy: OnFailure
+      containers:
+        - name: create-bundle
+          image: bitnami/kubectl:latest
+          env:
+            - name: CENTRAL_ENDPOINT
+              value: "https://central.stackrox.svc:443"
+            - name: CENTRAL_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: central-admin-password
+                  key: password
+                  optional: true
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+
+              # Check if init bundle secrets already exist
+              if kubectl get secret collector-tls -n stackrox 2>/dev/null; then
+                echo "Init bundle secrets already exist, skipping creation"
+                exit 0
+              fi
+
+              # Wait for Central to be reachable
+              echo "Waiting for Central at ${CENTRAL_ENDPOINT}..."
+              until curl -sk "${CENTRAL_ENDPOINT}/v1/ping" >/dev/null 2>&1; do
+                echo "Central not ready yet, waiting..."
+                sleep 10
+              done
+              echo "Central is ready"
+
+              # Get admin password - try secret first, then fall back to central-htpasswd
+              if [ -n "${CENTRAL_ADMIN_PASSWORD}" ]; then
+                ADMIN_PASS="${CENTRAL_ADMIN_PASSWORD}"
+              else
+                echo "Fetching admin password from central-htpasswd secret..."
+                ADMIN_PASS=$(kubectl get secret central-htpasswd -n stackrox -o jsonpath='{.data.password}' 2>/dev/null | base64 -d || true)
+                if [ -z "${ADMIN_PASS}" ]; then
+                  echo "ERROR: Could not find admin password. Please create a secret 'central-admin-password' with the Central admin password."
+                  exit 1
+                fi
+              fi
+
+              # Generate init bundle with unique name
+              CLUSTER_NAME=$(kubectl config current-context | sed 's/[^a-zA-Z0-9-]/-/g' | head -c 50)
+              BUNDLE_NAME="gitops-${CLUSTER_NAME}-$(date +%s)"
+
+              echo "Generating init bundle '${BUNDLE_NAME}'..."
+              BUNDLE=$(curl -sk -u "admin:${ADMIN_PASS}" \
+                -X POST "${CENTRAL_ENDPOINT}/v1/cluster-init/init-bundles" \
+                -H 'Content-Type: application/json' \
+                -d "{\"name\": \"${BUNDLE_NAME}\"}")
+
+              # Check for errors
+              if echo "$BUNDLE" | grep -q '"error"'; then
+                echo "Error generating init bundle:"
+                echo "$BUNDLE" | jq .
+                exit 1
+              fi
+
+              # Apply the Kubernetes secrets from the bundle
+              echo "Applying init bundle secrets..."
+              echo "$BUNDLE" | jq -r '.kubectlBundle' | base64 -d | kubectl apply -n stackrox -f -
+
+              echo "Init bundle created successfully"
