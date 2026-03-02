@@ -11,4 +11,4 @@ apps:
   - appName: stackrox-operator
     image: quay.io/stackrox-io/stackrox-operator:4.10.0-rc.4
   - appName: stackrox-secured-cluster
-    centralEndpoint: central.stackrox.svc:443
+    centralEndpoint: central-stackrox.apps.rosa.kl-01-29-additi.uxca.p3.openshiftapps.com:443
