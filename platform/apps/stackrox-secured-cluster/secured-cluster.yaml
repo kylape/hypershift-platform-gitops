@@ -7,6 +7,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "3"
 spec:
   clusterName: local-cluster
+  centralEndpoint: central-stackrox.apps.rosa.kl-01-29-additi.uxca.p3.openshiftapps.com:443
   admissionControl:
     listenOnCreates: true
     listenOnUpdates: true
