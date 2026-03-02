@@ -7,9 +7,9 @@
 # Cluster config example:
 #   name: my-cluster
 #   apps:
-#     - name: stackrox-operator
+#     - appName: stackrox-operator
 #       image: quay.io/stackrox-io/stackrox-operator:4.10.0-rc.4
-#     - name: stackrox-secured-cluster
+#     - appName: stackrox-secured-cluster
 #       centralEndpoint: central.stackrox.svc:443
 #
 # Supported app parameters:
@@ -42,11 +42,11 @@ spec:
   template:
     metadata:
       # name0 is the app name from the list generator
-      name: 'kubevirt-{{ .name }}-{{ index . "name0" }}'
+      name: 'kubevirt-{{ .name }}-{{ .appName }}'
       namespace: openshift-gitops
       labels:
         cluster: 'kubevirt-{{ .name }}'
-        app: '{{ index . "name0" }}'
+        app: '{{ .appName }}'
       annotations:
         argocd.argoproj.io/sync-wave: "2"
     spec:
@@ -54,11 +54,11 @@ spec:
       source:
         repoURL: https://github.com/kylape/hypershift-platform-gitops.git
         targetRevision: main
-        path: 'platform/apps/{{ index . "name0" }}'
+        path: 'platform/apps/{{ .appName }}'
         kustomize:
           commonAnnotations:
             cluster-apps.hypershift.io/cluster: 'kubevirt-{{ .name }}'
-            cluster-apps.hypershift.io/app: '{{ index . "name0" }}'
+            cluster-apps.hypershift.io/app: '{{ .appName }}'
           images:
             - '{{ .image }}'
           patches:
