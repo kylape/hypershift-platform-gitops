@@ -59,8 +59,11 @@ spec:
           commonAnnotations:
             cluster-apps.hypershift.io/cluster: 'kubevirt-{{ .name }}'
             cluster-apps.hypershift.io/app: '{{ .appName }}'
+          {{- if .image }}
           images:
             - '{{ .image }}'
+          {{- end }}
+          {{- if .centralEndpoint }}
           patches:
             - target:
                 kind: SecuredCluster
@@ -76,6 +79,7 @@ spec:
                 - op: replace
                   path: /spec/template/spec/containers/0/env/0/value
                   value: "https://{{ .centralEndpoint }}"
+          {{- end }}
       destination:
         # Deploy to the hosted cluster (requires ACM GitOpsCluster integration)
         name: 'kubevirt-{{ .name }}'
