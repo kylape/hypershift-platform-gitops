@@ -56,14 +56,12 @@ spec:
         targetRevision: main
         path: 'platform/apps/{{ index . "name0" }}'
         kustomize:
-          # Override image if specified in app config
-          {{- if .image }}
+          commonAnnotations:
+            cluster-apps.hypershift.io/cluster: 'kubevirt-{{ .name }}'
+            cluster-apps.hypershift.io/app: '{{ index . "name0" }}'
           images:
             - '{{ .image }}'
-          {{- end }}
-          # Add patches for app-specific parameters
           patches:
-            {{- if .centralEndpoint }}
             - target:
                 kind: SecuredCluster
                 name: stackrox-secured-cluster-services
@@ -78,7 +76,6 @@ spec:
                 - op: replace
                   path: /spec/template/spec/containers/0/env/0/value
                   value: "https://{{ .centralEndpoint }}"
-            {{- end }}
       destination:
         # Deploy to the hosted cluster (requires ACM GitOpsCluster integration)
         name: 'kubevirt-{{ .name }}'
