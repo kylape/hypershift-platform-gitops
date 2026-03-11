@@ -51,13 +51,7 @@ spec:
           image: bitnami/kubectl:latest
           env:
             - name: CENTRAL_ENDPOINT
-              value: "https://central-stackrox.apps.rosa.kl-01-29-additi.uxca.p3.openshiftapps.com:443"
-            - name: CENTRAL_ADMIN_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: central-admin-password
-                  key: password
-                  optional: true
+              value: "https://central.stackrox.svc:443"
           command:
             - /bin/bash
             - -c
