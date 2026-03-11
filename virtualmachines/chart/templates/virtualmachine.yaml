@@ -60,6 +60,9 @@ spec:
       nodeSelector:
         kubernetes.io/arch: {{ .Values.arch }}
       {{- end }}
+      tolerations:
+      - key: workload-type
+        value: kubevirt-vm
       volumes:
         - dataVolume:
             name: {{ .Values.name }}
