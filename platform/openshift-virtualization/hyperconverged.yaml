@@ -59,4 +59,10 @@ spec:
     batchEvictionSize: 10
     workloadUpdateMethods:
     - LiveMigrate
-  workloads: {}
+  workloads:
+    nodePlacement:
+      tolerations:
+      - effect: NoSchedule
+        key: workload-type
+        operator: Equal
+        value: kubevirt-vm
