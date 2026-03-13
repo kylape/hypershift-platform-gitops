@@ -71,9 +71,11 @@ spec:
           jsonPointers:
             - /spec/preference/kind
             - /spec/preference/revisionName
+            - /spec/template/metadata/creationTimestamp
             - /spec/template/spec/domain/devices/interfaces/0/macAddress
             - /spec/template/spec/domain/features/acpi
             - /spec/template/spec/domain/machine
+            - /spec/dataVolumeTemplates/0/metadata/creationTimestamp
       syncPolicy:
         automated:
           prune: true
