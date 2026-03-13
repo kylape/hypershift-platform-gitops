@@ -3,6 +3,8 @@ apiVersion: cluster.open-cluster-management.io/v1beta2
 kind: ManagedClusterSet
 metadata:
   name: hosted-clusters
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   clusterSelector:
     selectorType: ExclusiveClusterSetLabel
@@ -13,5 +15,7 @@ kind: ManagedClusterSetBinding
 metadata:
   name: hosted-clusters
   namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   clusterSet: hosted-clusters

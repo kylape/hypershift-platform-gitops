@@ -3,6 +3,8 @@ kind: Placement
 metadata:
   name: all-hosted-clusters
   namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   clusterSets:
     - hosted-clusters
