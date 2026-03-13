@@ -7,9 +7,3 @@ metadata:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   availabilityConfig: High
-  overrides:
-    components:
-      - name: hypershift
-        enabled: true
-      - name: hypershift-local-hosting
-        enabled: true
