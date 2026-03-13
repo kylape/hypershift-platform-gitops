@@ -13,20 +13,4 @@ spec:
     sslCiphers:
       - ECDHE-ECDSA-AES256-GCM-SHA384
       - ECDHE-RSA-AES256-GCM-SHA384
-  overrides:
-    components:
-      - name: search
-        enabled: true
-      - name: console
-        enabled: true
-      - name: insights
-        enabled: true
-      - name: grc
-        enabled: true
-      - name: cluster-lifecycle
-        enabled: true
-      - name: volsync
-        enabled: true
-      - name: multicluster-engine
-        enabled: true
   separateCertificateManagement: false
