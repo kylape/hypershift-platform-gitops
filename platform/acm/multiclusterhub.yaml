@@ -15,11 +15,7 @@ spec:
       - ECDHE-RSA-AES256-GCM-SHA384
   overrides:
     components:
-      - name: multiclusterhub-repo
-        enabled: true
       - name: search
-        enabled: true
-      - name: management-ingress
         enabled: true
       - name: console
         enabled: true
