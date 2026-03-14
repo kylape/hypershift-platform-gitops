@@ -65,15 +65,17 @@ spec:
       ignoreDifferences:
         - group: kubevirt.io
           kind: VirtualMachine
+          managedFieldsManagers:
+            - virt-controller
+            - cluster-policy-controller
           jqPathExpressions:
-            - .metadata.annotations
-            - .metadata.generation
+            - .metadata
             - .spec.preference
-            - .spec.template.metadata.creationTimestamp
+            - .spec.template.metadata
             - .spec.template.spec.domain.devices.interfaces
             - .spec.template.spec.domain.features
             - .spec.template.spec.domain.machine
-            - .spec.dataVolumeTemplates[].metadata.creationTimestamp
+            - .spec.dataVolumeTemplates[0].metadata
       syncPolicy:
         automated:
           prune: true
