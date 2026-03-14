@@ -65,11 +65,9 @@ spec:
       ignoreDifferences:
         - group: kubevirt.io
           kind: VirtualMachine
-          managedFieldsManagers:
-            - virt-controller
-            - cluster-policy-controller
           jqPathExpressions:
-            - .metadata
+            - .metadata.annotations
+            - .metadata.generation
             - .spec.preference
             - .spec.template.metadata
             - .spec.template.spec.domain.devices.interfaces
