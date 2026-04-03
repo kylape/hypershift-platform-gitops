@@ -21,7 +21,8 @@ spec:
     spec:
       restartPolicy: Never
       serviceAccountName: {{ .Values.serviceAccountName }}
-      # No nodeSelector - use default M5 pool for amd64 runners
+      nodeSelector:
+        kubernetes.io/arch: amd64
       initContainers:
       - name: init-dind-externals
         image: ghcr.io/actions/actions-runner:latest
