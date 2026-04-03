@@ -63,6 +63,7 @@ spec:
             dindStorageSize: "{{ index . "dindStorageSize" | default "50Gi" }}"
             storageClassName: "{{ index . "storageClassName" | default "lvms-nvme" }}"
             serviceAccountName: "{{ index . "serviceAccountName" | default "arc-runners-dind" }}"
+            createExternalSecret: {{ index . "createExternalSecret" | default false }}
       destination:
         server: https://kubernetes.default.svc
         namespace: arc-runners
